@@ -11,6 +11,7 @@
 
 #include <common.h>
 #include <fdtdec.h>
+#include <fdt_support.h>
 #include <malloc.h>
 #include <dm/device.h>
 #include <dm/device-internal.h>
@@ -581,6 +582,25 @@ fdt_addr_t dev_get_addr(struct udevice *dev)
 #if CONFIG_IS_ENABLED(OF_CONTROL)
 	fdt_addr_t addr;
 
+	if (CONFIG_IS_ENABLED(OF_TRANSLATE)) {
+		const fdt32_t *reg;
+
+		reg = fdt_getprop(gd->fdt_blob, dev->of_offset, "reg", NULL);
+		if (!reg)
+			return FDT_ADDR_T_NONE;
+
+		/*
+		 * Use the full-fledged translate function for complex
+		 * bus setups.
+		 */
+		return fdt_translate_address((void *)gd->fdt_blob,
+					     dev->of_offset, reg);
+	}
+
+	/*
+	 * Use the "simple" translate function for less complex
+	 * bus setups.
+	 */
 	addr = fdtdec_get_addr(gd->fdt_blob, dev->of_offset, "reg");
 	if (CONFIG_IS_ENABLED(SIMPLE_BUS) && addr != FDT_ADDR_T_NONE) {
 		if (device_get_uclass_id(dev->parent) == UCLASS_SIMPLE_BUS)
