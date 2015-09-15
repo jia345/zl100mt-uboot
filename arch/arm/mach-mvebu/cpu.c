@@ -13,6 +13,7 @@
 #include <asm/arch/cpu.h>
 #include <asm/arch/soc.h>
 #include <sdhci.h>
+#include <phy.h>
 
 #define DDR_BASE_CS_OFF(n)	(0x0000 + ((n) << 3))
 #define DDR_SIZE_CS_OFF(n)	(0x0004 + ((n) << 3))
@@ -332,6 +333,7 @@ int cpu_eth_init(bd_t *bis)
 	u32 enet_base[] = { MVEBU_EGIGA0_BASE, MVEBU_EGIGA1_BASE,
 			    MVEBU_EGIGA2_BASE, MVEBU_EGIGA3_BASE };
 	u8 phy_addr[] = CONFIG_PHY_ADDR;
+	phy_interface_t int_type[] = CONFIG_SYS_NETA_INTERFACE_TYPE;
 	int i;
 
 	/*
@@ -339,12 +341,15 @@ int cpu_eth_init(bd_t *bis)
 	 * slightly different base addresses for its 2-3 interfaces.
 	 */
 	if (mvebu_soc_family() != MVEBU_SOC_AXP) {
+		printf("mvebu_soc_family != MVEBU_SOC_AXP\n");
 		enet_base[1] = MVEBU_EGIGA2_BASE;
 		enet_base[2] = MVEBU_EGIGA3_BASE;
 	}
 
-	for (i = 0; i < ARRAY_SIZE(phy_addr); i++)
-		mvneta_initialize(bis, enet_base[i], i, phy_addr[i]);
+	/* Turris hack */
+	/*for (i = 0; i < ARRAY_SIZE(phy_addr); i++)
+		mvneta_initialize(bis, enet_base[i], i, phy_addr[i], int_type[i]); */
+	mvneta_initialize(bis, enet_base[2], 2, 1, PHY_INTERFACE_MODE_SGMII);
 
 	return 0;
 }

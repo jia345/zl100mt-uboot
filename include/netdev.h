@@ -12,6 +12,8 @@
 #ifndef _NETDEV_H_
 #define _NETDEV_H_
 
+#include <phy.h>
+
 /*
  * Board and CPU-specific initialization functions
  * board_eth_init() has highest priority.  cpu_eth_init() only
@@ -65,7 +67,7 @@ int mpc512x_fec_initialize(bd_t *bis);
 int mpc5xxx_fec_initialize(bd_t *bis);
 int mpc82xx_scc_enet_initialize(bd_t *bis);
 int mvgbe_initialize(bd_t *bis);
-int mvneta_initialize(bd_t *bis, int base_addr, int devnum, int phy_addr);
+int mvneta_initialize(bd_t *bis, int base_addr, int devnum, int phy_addr, phy_interface_t type);
 int natsemi_initialize(bd_t *bis);
 int ne2k_register(void);
 int npe_initialize(bd_t *bis);

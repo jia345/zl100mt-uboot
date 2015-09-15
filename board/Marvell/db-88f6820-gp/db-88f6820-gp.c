@@ -68,12 +68,14 @@ static struct hws_topology_map board_topology_map = {
 	      {0x1, 0, 0, 0},
 	      {0x1, 0, 0, 0},
 	      {0x1, 0, 0, 0} },
-	    SPEED_BIN_DDR_1866L,	/* speed_bin */
-	    BUS_WIDTH_8,		/* memory_width */
+	    SPEED_BIN_DDR_800E,		/* speed_bin */
+//	    SPEED_BIN_DDR_1600K,	/* speed_bin */
+	    BUS_WIDTH_16,		/* memory_width */
 	    MEM_4G,			/* mem_size */
-	    DDR_FREQ_800,		/* frequency */
+	    DDR_FREQ_400,		/* frequency */
+//	    DDR_FREQ_800,		/* frequency */
 	    0, 0,			/* cas_l cas_wl */
-	    HWS_TEMP_LOW} },		/* temperature */
+	    HWS_TEMP_HIGH} },		/* temperature */
 	5,				/* Num Of Bus Per Interface*/
 	BUS_MASK_32BIT			/* Busses mask */
 };
@@ -127,7 +129,7 @@ int board_init(void)
 
 int checkboard(void)
 {
-	puts("Board: Marvell DB-88F6820-GP\n");
+	puts("Board: Do NOT call me TurrisLite!!!\n");
 
 	return 0;
 }

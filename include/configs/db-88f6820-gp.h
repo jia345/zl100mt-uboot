@@ -7,6 +7,9 @@
 #ifndef _CONFIG_DB_88F6820_GP_H
 #define _CONFIG_DB_88F6820_GP_H
 
+/*#define CONFIG_CUSTOMER_BOARD_SUPPORT */
+#define CONFIG_TURRISOMNIA_SUPPORT
+
 /*
  * High Level Configuration Options (easy to change)
  */
@@ -33,6 +36,8 @@
 /*
  * Commands configuration
  */
+#define CONFIG_CMD_MEMTEST
+#define CONFIG_CMD_BOOTZ
 #define CONFIG_SYS_NO_FLASH		/* Declare no flash (NOR/SPI) */
 #define CONFIG_CMD_CACHE
 #define CONFIG_CMD_DHCP
@@ -61,7 +66,8 @@
 /* SPI NOR flash default params, used by sf commands */
 #define CONFIG_SF_DEFAULT_SPEED		1000000
 #define CONFIG_SF_DEFAULT_MODE		SPI_MODE_3
-#define CONFIG_SPI_FLASH_STMICRO
+/*#define CONFIG_SPI_FLASH_STMICRO*/
+#define CONFIG_SPI_FLASH_SPANSION
 
 /*
  * SDIO/MMC Card Configuration
@@ -101,8 +107,9 @@
 #define CONFIG_ENV_SECT_SIZE		(256 << 10) /* 256KiB sectors */
 
 #define CONFIG_PHY_MARVELL		/* there is a marvell phy */
-#define CONFIG_PHY_ADDR			{ 1, 0 }
-#define CONFIG_SYS_NETA_INTERFACE_TYPE	PHY_INTERFACE_MODE_RGMII
+#define CONFIG_PHY_ADDR			{ 5, 6, 1 }
+/*#define CONFIG_SYS_NETA_INTERFACE_TYPE	PHY_INTERFACE_MODE_RGMII*/
+#define CONFIG_SYS_NETA_INTERFACE_TYPE	{ PHY_INTERFACE_MODE_RGMII, PHY_INTERFACE_MODE_RGMII, PHY_INTERFACE_MODE_SGMII }
 #define PHY_ANEG_TIMEOUT	8000	/* PHY needs a longer aneg time */
 
 /* PCIe support */

@@ -1589,7 +1589,7 @@ static void mvneta_halt(struct eth_device *dev)
 	mvneta_port_disable(pp);
 }
 
-int mvneta_initialize(bd_t *bis, int base_addr, int devnum, int phy_addr)
+int mvneta_initialize(bd_t *bis, int base_addr, int devnum, int phy_addr, phy_interface_t type)
 {
 	struct eth_device *dev;
 	struct mvneta_port *pp;
@@ -1635,12 +1635,7 @@ int mvneta_initialize(bd_t *bis, int base_addr, int devnum, int phy_addr)
 	dev->recv = mvneta_recv;
 	dev->write_hwaddr = NULL;
 
-	/*
-	 * The PHY interface type is configured via the
-	 * board specific CONFIG_SYS_NETA_INTERFACE_TYPE
-	 * define.
-	 */
-	pp->phy_interface = CONFIG_SYS_NETA_INTERFACE_TYPE;
+	pp->phy_interface = type;
 
 	eth_register(dev);
 

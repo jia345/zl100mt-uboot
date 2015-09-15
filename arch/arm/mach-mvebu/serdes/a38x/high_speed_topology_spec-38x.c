@@ -14,6 +14,55 @@
 #include "high_speed_topology_spec.h"
 #include "sys_env_lib.h"
 
+#ifdef CONFIG_TURRISOMNIA_SUPPORT
+/*
+ * This is an example implementation for this custom board
+ * specific function
+ */
+static struct serdes_map turris_board_topology_config[] = {
+	/* Customer Board Topology - reference from Marvell DB-GP board */
+	{SATA0, SERDES_SPEED_3_GBPS, SERDES_DEFAULT_MODE, 0, 0},
+	{PEX0, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
+	{PEX1, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
+	{USB3_HOST1, SERDES_SPEED_5_GBPS, SERDES_DEFAULT_MODE, 0, 0},
+	{USB3_HOST0, SERDES_SPEED_5_GBPS, SERDES_DEFAULT_MODE, 0, 0},
+	{SGMII2, SERDES_SPEED_1_25_GBPS, SERDES_DEFAULT_MODE, 0, 0}
+};
+
+int hws_board_topology_load(struct serdes_map *serdes_map_array)
+{
+	u32 lane_num;
+	struct serdes_map *topology_config_ptr;
+
+	DEBUG_INIT_FULL_S("\n### hws_board_topology_load ###\n");
+
+	topology_config_ptr = turris_board_topology_config;
+
+	printf("\nInitialize Turris board topology\n");
+
+	/* Update the default board topology device flavours */
+/*	CHECK_STATUS(hws_update_device_toplogy
+		     (topology_config_ptr, DB_CONFIG_DEFAULT)); */
+
+	/* Updating the topology map */
+	for (lane_num = 0; lane_num < hws_serdes_get_max_lane(); lane_num++) {
+		serdes_map_array[lane_num].serdes_mode =
+			topology_config_ptr[lane_num].serdes_mode;
+		serdes_map_array[lane_num].serdes_speed =
+			topology_config_ptr[lane_num].serdes_speed;
+		serdes_map_array[lane_num].serdes_type =
+			topology_config_ptr[lane_num].serdes_type;
+		serdes_map_array[lane_num].swap_rx =
+			topology_config_ptr[lane_num].swap_rx;
+		serdes_map_array[lane_num].swap_tx =
+			topology_config_ptr[lane_num].swap_tx;
+	}
+
+	return MV_OK;
+
+}
+#else
+
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 /*
  * This is an example implementation for this custom board
@@ -33,6 +82,7 @@ int hws_board_topology_load(struct serdes_map *serdes_map_array)
 {
 	serdes_map_array = custom_board_topology_config;
 }
+#endif
 #endif
 
 load_topology_func_ptr load_topology_func_arr[] = {
