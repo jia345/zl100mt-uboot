@@ -10,6 +10,8 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
+#define DEBUG 1
+
 #include <common.h>
 #include <linux/compiler.h>
 #include <version.h>
@@ -342,6 +344,13 @@ static int setup_dest_addr(void)
 	gd->ram_top += get_effective_memsize();
 	gd->ram_top = board_get_usable_ram_top(gd->mon_len);
 	gd->relocaddr = gd->ram_top;
+//	gd->relocaddr = CONFIG_SYS_TEXT_BASE;
+
+// HACK HACK HACK - 2T enable
+	u8 *memcontrol=0xf1001404;
+	*memcontrol=(*memcontrol|0x8);
+
+
 	debug("Ram top: %08lX\n", (ulong)gd->ram_top);
 #if defined(CONFIG_MP) && (defined(CONFIG_MPC86xx) || defined(CONFIG_E500))
 	/*
@@ -667,6 +676,20 @@ static int reloc_fdt(void)
 	return 0;
 }
 
+static void dumpmem(volatile void *a, unsigned int l)
+{
+	int i,j;
+	const char *hex = "0123456789ABCDEF";
+	for(i=0;i<(l/16+1);i++){
+		debug("0x%X: ", (unsigned int)a+i*16);
+		for(j=0;j<16;j++){
+			debug("%c",hex[(((char *)a)[i*16+j]>>4)&0xF]);
+			debug("%c ",hex[((char *)a)[i*16+j]&0xF]);
+		}
+		debug("\n");
+	}
+}
+
 static int setup_reloc(void)
 {
 	if (gd->flags & GD_FLG_SKIP_RELOC) {
@@ -685,6 +708,11 @@ static int setup_reloc(void)
 #endif
 #endif
 	memcpy(gd->new_gd, (char *)gd, sizeof(gd_t));
+
+/*	debug("oldgd, size=%d:\n",sizeof(gd_t));
+	dumpmem(gd, sizeof(gd_t));
+	debug("newgd:\n");
+	dumpmem(gd->new_gd, sizeof(gd_t)); */
 
 	debug("Relocation Offset is: %08lx\n", gd->reloc_off);
 	debug("Relocating to %08lx, new gd at %08lx, sp at %08lx\n",

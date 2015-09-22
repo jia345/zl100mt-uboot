@@ -15,10 +15,14 @@
 #include "sys_env_lib.h"
 
 #ifdef CONFIG_TURRISOMNIA_SUPPORT
+
+#define CONFIG_TURRISOMNIA_SATA
+
 /*
  * This is an example implementation for this custom board
  * specific function
  */
+#ifdef CONFIG_TURRISOMNIA_SATA
 static struct serdes_map turris_board_topology_config[] = {
 	/* Customer Board Topology - reference from Marvell DB-GP board */
 	{SATA0, SERDES_SPEED_3_GBPS, SERDES_DEFAULT_MODE, 0, 0},
@@ -28,6 +32,19 @@ static struct serdes_map turris_board_topology_config[] = {
 	{USB3_HOST0, SERDES_SPEED_5_GBPS, SERDES_DEFAULT_MODE, 0, 0},
 	{SGMII2, SERDES_SPEED_1_25_GBPS, SERDES_DEFAULT_MODE, 0, 0}
 };
+#else
+static struct serdes_map turris_board_topology_config[] = {
+	/* Customer Board Topology - reference from Marvell DB-GP board */
+	// HACK HACK HACK - pending SERDES rerouting
+	{PEX0, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
+	{SATA0, SERDES_SPEED_3_GBPS, SERDES_DEFAULT_MODE, 0, 0},
+	{PEX1, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
+	{USB3_HOST1, SERDES_SPEED_5_GBPS, SERDES_DEFAULT_MODE, 0, 0},
+	{USB3_HOST0, SERDES_SPEED_5_GBPS, SERDES_DEFAULT_MODE, 0, 0},
+	{SGMII2, SERDES_SPEED_1_25_GBPS, SERDES_DEFAULT_MODE, 0, 0}
+};
+#endif
+
 
 int hws_board_topology_load(struct serdes_map *serdes_map_array)
 {
