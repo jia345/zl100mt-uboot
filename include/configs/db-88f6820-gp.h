@@ -73,7 +73,7 @@
  * SDIO/MMC Card Configuration
  */
 #define CONFIG_MMC
-#define CONFIG_MMC_SDMA
+/*#define CONFIG_MMC_SDMA */
 #define CONFIG_GENERIC_MMC
 #define CONFIG_SDHCI
 #define CONFIG_MV_SDHCI
