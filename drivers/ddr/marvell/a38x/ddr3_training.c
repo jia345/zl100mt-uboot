@@ -575,7 +575,11 @@ int hws_ddr3_tip_init_controller(u32 dev_num, struct init_cntr_param *init_cntr_
 				/* calculate number of CS (per interface) */
 				CHECK_STATUS(calc_cs_num
 					     (dev_num, if_id, &cs_num));
+#ifdef CONFIG_TURRISOMNIA_SUPPORT
+				t2t=1;
+#else
 				t2t = (cs_num == 1) ? 0 : 1;
+#endif /* CONFIG_TURRISOMNIA_SUPPORT */
 			}
 
 			CHECK_STATUS(ddr3_tip_if_write

@@ -10,7 +10,7 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
-#define DEBUG 1
+/* #define DEBUG 1 */
 
 #include <common.h>
 #include <linux/compiler.h>
@@ -344,12 +344,6 @@ static int setup_dest_addr(void)
 	gd->ram_top += get_effective_memsize();
 	gd->ram_top = board_get_usable_ram_top(gd->mon_len);
 	gd->relocaddr = gd->ram_top;
-//	gd->relocaddr = CONFIG_SYS_TEXT_BASE;
-
-// HACK HACK HACK - 2T enable
-	u8 *memcontrol=0xf1001404;
-	*memcontrol=(*memcontrol|0x8);
-
 
 	debug("Ram top: %08lX\n", (ulong)gd->ram_top);
 #if defined(CONFIG_MP) && (defined(CONFIG_MPC86xx) || defined(CONFIG_E500))
@@ -676,6 +670,7 @@ static int reloc_fdt(void)
 	return 0;
 }
 
+/* HACK HACK HACK (turris)
 static void dumpmem(volatile void *a, unsigned int l)
 {
 	int i,j;
@@ -688,7 +683,7 @@ static void dumpmem(volatile void *a, unsigned int l)
 		}
 		debug("\n");
 	}
-}
+} */
 
 static int setup_reloc(void)
 {

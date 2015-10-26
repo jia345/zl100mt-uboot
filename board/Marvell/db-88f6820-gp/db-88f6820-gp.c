@@ -68,14 +68,12 @@ static struct hws_topology_map board_topology_map = {
 	      {0x1, 0, 0, 0},
 	      {0x1, 0, 0, 0},
 	      {0x1, 0, 0, 0} },
-//	    SPEED_BIN_DDR_800E,		/* speed_bin */
 	    SPEED_BIN_DDR_1600K,	/* speed_bin */
 	    BUS_WIDTH_16,		/* memory_width */
 	    MEM_4G,			/* mem_size */
-//	    DDR_FREQ_400,		/* frequency */
 	    DDR_FREQ_800,		/* frequency */
 	    0, 0,			/* cas_l cas_wl */
-	    HWS_TEMP_HIGH} },		/* temperature */
+	    HWS_TEMP_NORMAL} },		/* temperature */
 	5,				/* Num Of Bus Per Interface*/
 	BUS_MASK_32BIT			/* Busses mask */
 };
