@@ -332,24 +332,27 @@ int cpu_eth_init(bd_t *bis)
 {
 	u32 enet_base[] = { MVEBU_EGIGA0_BASE, MVEBU_EGIGA1_BASE,
 			    MVEBU_EGIGA2_BASE, MVEBU_EGIGA3_BASE };
+#ifndef CONFIG_TURRISOMNIA_SUPPORT
 	u8 phy_addr[] = CONFIG_PHY_ADDR;
 	phy_interface_t int_type[] = CONFIG_SYS_NETA_INTERFACE_TYPE;
 	int i;
+#endif /* CONFIG_TURRISOMNIA_SUPPORT */
 
 	/*
 	 * Only Armada XP supports all 4 ethernet interfaces. A38x has
 	 * slightly different base addresses for its 2-3 interfaces.
 	 */
 	if (mvebu_soc_family() != MVEBU_SOC_AXP) {
-		printf("mvebu_soc_family != MVEBU_SOC_AXP\n");
 		enet_base[1] = MVEBU_EGIGA2_BASE;
 		enet_base[2] = MVEBU_EGIGA3_BASE;
 	}
 
-	/* Turris hack */
-	/*for (i = 0; i < ARRAY_SIZE(phy_addr); i++)
-		mvneta_initialize(bis, enet_base[i], i, phy_addr[i], int_type[i]); */
+#ifdef CONFIG_TURRISOMNIA_SUPPORT
 	mvneta_initialize(bis, enet_base[2], 2, 1, PHY_INTERFACE_MODE_SGMII);
+#else
+	for (i = 0; i < ARRAY_SIZE(phy_addr); i++)
+		mvneta_initialize(bis, enet_base[i], i, phy_addr[i], int_type[i]);
+#endif /* CONFIG_TURRISOMNIA_SUPPORT */
 
 	return 0;
 }
