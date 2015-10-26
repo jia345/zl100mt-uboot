@@ -280,6 +280,13 @@ u32 sys_env_get_topology_update_info(
 	return MV_OK;
 }
 #else /*CONFIG_ARMADA_38X*/
+#ifdef CONFIG_TURRISOMNIA_SUPPORT
+u32 sys_env_get_topology_update_info(
+        struct topology_update_info *tui)
+{
+	return MV_OK;
+}
+#else
 u32 sys_env_get_topology_update_info(
 	struct topology_update_info *tui)
 {
@@ -384,5 +391,6 @@ u32 sys_env_get_topology_update_info(
 
 	return MV_OK;
 }
+#endif /* CONFIG_TURRISOMNIA_SUPPORT */
 #endif /* CONFIG_ARMADA_38X */
 #endif /* MV_DDR_TOPOLOGY_UPDATE_FROM_TWSI */
