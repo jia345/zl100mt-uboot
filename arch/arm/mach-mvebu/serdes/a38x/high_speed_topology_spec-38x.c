@@ -49,7 +49,7 @@ static struct serdes_map* turris_select_topology(void)
 	u8 addr = TURRIS_I2C_SWITCH_BUS_TO_MCU;
 	u16 mode;
 
-	puts("Using PEX topology: ");
+	puts("Using SERDES0 mode: ");
 
 	if(i2c_write(TURRIS_I2C_SWITCH_CHIP, TURRIS_I2C_SWITCH_ADDR, 1, (uchar *)&addr, 1)) {
 		puts("I2C transaction failed, default PEX\n");
