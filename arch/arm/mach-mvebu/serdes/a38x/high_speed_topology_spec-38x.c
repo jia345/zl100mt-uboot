@@ -15,36 +15,60 @@
 #include "sys_env_lib.h"
 
 #ifdef CONFIG_TURRISOMNIA_SUPPORT
-
-#define CONFIG_TURRISOMNIA_SATA
-
 /*
  * This is an example implementation for this custom board
  * specific function
  */
-#ifdef CONFIG_TURRISOMNIA_SATA
-static struct serdes_map turris_board_topology_config[] = {
-	/* Customer Board Topology - reference from Marvell DB-GP board */
+static struct serdes_map turris_board_topology_config_sata[] = {
 	{SATA0, SERDES_SPEED_3_GBPS, SERDES_DEFAULT_MODE, 0, 0},
-	{PEX0, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
+	{USB3_HOST0, SERDES_SPEED_5_GBPS, SERDES_DEFAULT_MODE, 0, 0},
 	{PEX1, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
 	{USB3_HOST1, SERDES_SPEED_5_GBPS, SERDES_DEFAULT_MODE, 0, 0},
-	{USB3_HOST0, SERDES_SPEED_5_GBPS, SERDES_DEFAULT_MODE, 0, 0},
+	{PEX2, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
 	{SGMII2, SERDES_SPEED_1_25_GBPS, SERDES_DEFAULT_MODE, 0, 0}
 };
-#else
-static struct serdes_map turris_board_topology_config[] = {
+static struct serdes_map turris_board_topology_config_pex[] = {
 	/* Customer Board Topology - reference from Marvell DB-GP board */
-	// HACK HACK HACK - pending SERDES rerouting
 	{PEX0, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
-	{SATA0, SERDES_SPEED_3_GBPS, SERDES_DEFAULT_MODE, 0, 0},
+	{USB3_HOST0, SERDES_SPEED_5_GBPS, SERDES_DEFAULT_MODE, 0, 0},
 	{PEX1, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
 	{USB3_HOST1, SERDES_SPEED_5_GBPS, SERDES_DEFAULT_MODE, 0, 0},
-	{USB3_HOST0, SERDES_SPEED_5_GBPS, SERDES_DEFAULT_MODE, 0, 0},
+	{PEX2, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
 	{SGMII2, SERDES_SPEED_1_25_GBPS, SERDES_DEFAULT_MODE, 0, 0}
 };
-#endif
 
+#define TURRIS_I2C_SWITCH_CHIP 0x70
+#define TURRIS_I2C_SWITCH_ADDR 0x0
+#define TURRIS_I2C_SWITCH_BUS_TO_MCU 0x8 /* 0=addr + 8=enable */
+#define TURRIS_I2C_MCU_CHIP 0xAA
+#define TURRIS_I2C_MCU_ADDR_STATUS 0x1
+#define TURRIS_I2C_MCU_SATA 0x10
+
+static struct serdes_map* turris_select_topology(void)
+{
+	u8 addr = TURRIS_I2C_SWITCH_BUS_TO_MCU;
+	u16 mode;
+
+	puts("Using PEX topology: ");
+
+	if(i2c_write(TURRIS_I2C_SWITCH_CHIP, TURRIS_I2C_SWITCH_ADDR, 1, (uchar *)&addr, 1)) {
+		puts("I2C transaction failed, default PEX\n");
+		return turris_board_topology_config_pex;
+	}
+
+	if (i2c_read(TURRIS_I2C_MCU_CHIP, TURRIS_I2C_MCU_ADDR_STATUS, 1, (uchar *)&mode, 2)) {
+		puts("I2C read failed, default PEX\n");
+                return turris_board_topology_config_pex;
+        }
+
+        if (mode & TURRIS_I2C_MCU_SATA) {
+		puts("SATA\n");
+		return turris_board_topology_config_sata;
+	}
+
+	puts("PEX\n");
+	return turris_board_topology_config_pex;
+}
 
 int hws_board_topology_load(struct serdes_map *serdes_map_array)
 {
@@ -53,7 +77,7 @@ int hws_board_topology_load(struct serdes_map *serdes_map_array)
 
 	DEBUG_INIT_FULL_S("\n### hws_board_topology_load ###\n");
 
-	topology_config_ptr = turris_board_topology_config;
+	topology_config_ptr = turris_select_topology();
 
 	printf("\nInitialize Turris board topology\n");
 
