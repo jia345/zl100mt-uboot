@@ -42,14 +42,15 @@ static struct serdes_map turris_board_topology_config_pex[] = {
 #define TURRIS_I2C_SWITCH_BUS_TO_MCU 0x8 /* 0=addr + 8=enable */
 #define TURRIS_I2C_MCU_CHIP 0xAA
 #define TURRIS_I2C_MCU_ADDR_STATUS 0x1
-#define TURRIS_I2C_MCU_SATA 0x10
+#define TURRIS_I2C_MCU_SATA 0x20
+#define TURRIS_I2C_MCU_CARDDET 0x10
 
 static struct serdes_map* turris_select_topology(void)
 {
 	u8 addr = TURRIS_I2C_SWITCH_BUS_TO_MCU;
 	u16 mode;
 
-	puts("Using SERDES0 mode: ");
+	puts("SERDES0 card detect: ");
 
 	if(i2c_write(TURRIS_I2C_SWITCH_CHIP, TURRIS_I2C_SWITCH_ADDR, 1, (uchar *)&addr, 1)) {
 		puts("I2C transaction failed, default PEX\n");
@@ -60,6 +61,11 @@ static struct serdes_map* turris_select_topology(void)
 		puts("I2C read failed, default PEX\n");
                 return turris_board_topology_config_pex;
         }
+
+	if (!(mode & TURRIS_I2C_MCU_CARDDET)) {
+		puts("NONE\n");
+		return turris_board_topology_config_pex;
+	}
 
         if (mode & TURRIS_I2C_MCU_SATA) {
 		puts("SATA\n");
