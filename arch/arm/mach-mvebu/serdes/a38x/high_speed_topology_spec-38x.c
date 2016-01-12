@@ -15,10 +15,6 @@
 #include "sys_env_lib.h"
 
 #ifdef CONFIG_TURRISOMNIA_SUPPORT
-/*
- * This is an example implementation for this custom board
- * specific function
- */
 static struct serdes_map turris_board_topology_config_sata[] = {
 	{SATA0, SERDES_SPEED_3_GBPS, SERDES_DEFAULT_MODE, 0, 0},
 	{USB3_HOST0, SERDES_SPEED_5_GBPS, SERDES_DEFAULT_MODE, 0, 0},
@@ -28,7 +24,6 @@ static struct serdes_map turris_board_topology_config_sata[] = {
 	{SGMII2, SERDES_SPEED_1_25_GBPS, SERDES_DEFAULT_MODE, 0, 0}
 };
 static struct serdes_map turris_board_topology_config_pex[] = {
-	/* Customer Board Topology - reference from Marvell DB-GP board */
 	{PEX0, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
 	{USB3_HOST0, SERDES_SPEED_5_GBPS, SERDES_DEFAULT_MODE, 0, 0},
 	{PEX1, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
@@ -40,7 +35,7 @@ static struct serdes_map turris_board_topology_config_pex[] = {
 #define TURRIS_I2C_SWITCH_CHIP 0x70
 #define TURRIS_I2C_SWITCH_ADDR 0x0
 #define TURRIS_I2C_SWITCH_BUS_TO_MCU 0x8 /* 0=addr + 8=enable */
-#define TURRIS_I2C_MCU_CHIP 0xAA
+#define TURRIS_I2C_MCU_CHIP 0x2A
 #define TURRIS_I2C_MCU_ADDR_STATUS 0x1
 #define TURRIS_I2C_MCU_SATA 0x20
 #define TURRIS_I2C_MCU_CARDDET 0x10
