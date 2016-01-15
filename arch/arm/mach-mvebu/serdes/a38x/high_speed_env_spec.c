@@ -1515,17 +1515,17 @@ int hws_power_up_serdes_lanes(struct serdes_map *serdes_config_map)
 	/* per Serdes Power Up */
 	for (serdes_id = 0; serdes_id < hws_serdes_get_max_lane();
 	     serdes_id++) {
-		DEBUG_INIT_FULL_S
-		    ("calling serdes_power_up_ctrl: serdes lane number ");
-		DEBUG_INIT_FULL_D_10(serdes_lane_num, 1);
-		DEBUG_INIT_FULL_S("\n");
-
 		serdes_lane_num = hws_get_physical_serdes_num(serdes_id);
 		serdes_type = serdes_config_map[serdes_id].serdes_type;
 		serdes_speed = serdes_config_map[serdes_id].serdes_speed;
 		serdes_mode = serdes_config_map[serdes_id].serdes_mode;
 		serdes_rx_polarity_swap = serdes_config_map[serdes_id].swap_rx;
 		serdes_tx_polarity_swap = serdes_config_map[serdes_id].swap_tx;
+
+		DEBUG_INIT_FULL_S
+		    ("calling serdes_power_up_ctrl: serdes lane number ");
+		DEBUG_INIT_FULL_D_10(serdes_lane_num, 1);
+		DEBUG_INIT_FULL_S("\n");
 
 		/* serdes lane is not in use */
 		if (serdes_type == DEFAULT_SERDES)

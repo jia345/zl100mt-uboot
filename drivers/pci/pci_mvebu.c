@@ -92,7 +92,7 @@ static void __iomem *mvebu_pcie_membase = (void __iomem *)MBUS_PCI_MEM_BASE;
 #define PCIE_BASE(if)					\
 	((if) == 0 ?					\
 	 MVEBU_REG_PCIE_BASE + 0x40000 :		\
-	 MVEBU_REG_PCIE_BASE + 0x4000 * (if))
+	 MVEBU_REG_PCIE_BASE + 0x4000 * ((if)-1))
 
 /*
  * On A38x MV6820 these PEX ports are supported:
@@ -344,7 +344,8 @@ void pci_init_board(void)
 
 		/* Don't read at all from pci registers if port power is down */
 		if (pcie->lane == 0 && SELECT(soc_ctrl, pcie->port) == 0) {
-			i += 3;
+		/* TEST : Turris might be populated by SATA in PCI0!!! */
+		/*	i += 3; */
 			debug("%s: skipping port %d\n", __func__, pcie->port);
 			continue;
 		}
