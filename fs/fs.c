@@ -19,6 +19,7 @@
 #include <common.h>
 #include <mapmem.h>
 #include <part.h>
+#include <btrfs.h>
 #include <ext4fs.h>
 #include <fat.h>
 #include <fs.h>
@@ -155,6 +156,15 @@ static struct fstype_info fstypes[] = {
 		.read = fs_read_sandbox,
 		.write = fs_write_sandbox,
 		.uuid = fs_uuid_unsupported,
+	},
+#endif
+#ifdef CONFIG_FS_BTR
+	{
+		.fstype = FS_TYPE_BTR,
+		.probe = btrfs_probe,
+		.close = btrfs_close,
+		.ls = btrfs_ls,
+		.read = btrfs_read_file,
 	},
 #endif
 	{

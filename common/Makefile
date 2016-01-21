@@ -69,6 +69,7 @@ obj-$(CONFIG_CMD_BMP) += cmd_bmp.o
 obj-$(CONFIG_CMD_BOOTMENU) += cmd_bootmenu.o
 obj-$(CONFIG_CMD_BOOTLDR) += cmd_bootldr.o
 obj-$(CONFIG_CMD_BOOTSTAGE) += cmd_bootstage.o
+obj-$(CONFIG_CMD_BTR) += cmd_btr.o
 obj-$(CONFIG_CMD_CACHE) += cmd_cache.o
 obj-$(CONFIG_CMD_CBFS) += cmd_cbfs.o
 obj-$(CONFIG_CMD_CLK) += cmd_clk.o

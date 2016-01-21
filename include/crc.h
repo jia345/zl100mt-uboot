@@ -66,4 +66,12 @@ cyg_ether_crc32_accumulate(uint32_t crc, unsigned char *s, int len);
 
 extern uint16_t cyg_crc16(unsigned char *s, int len);
 
+/* CRC init for btrfs file-system*/
+
+void crc32c_init(u32 *crc32c_table, u32 pol);
+
+/* CRC calculate for btrfs file-system*/
+
+u32 crc32c_cal(u32 crc, const char *data, size_t length, u32 *crc32c_table);
+
 #endif /* _SERVICES_CRC_CRC_H_ */

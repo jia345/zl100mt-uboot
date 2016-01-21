@@ -55,6 +55,10 @@
 #define HAVE_BLOCK_DEVICE
 #endif
 
+#if defined(CONFIG_CMD_BTR) && !defined(CONFIG_FS_BTR)
+#define CONFIG_FS_BTR
+#endif
+
 #if (defined(CONFIG_PARTITION_UUIDS) || \
 	defined(CONFIG_EFI_PARTITION) || \
 	defined(CONFIG_RANDOM_UUID) || \
