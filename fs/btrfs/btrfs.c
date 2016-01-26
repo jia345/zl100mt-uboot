@@ -170,14 +170,14 @@ static inline void insert_map(struct btrfs_disk_key *key,
 {
 	struct btrfs_stripe *stripe = &chunk->stripe;
 	struct btrfs_stripe *stripe_end = stripe + chunk->num_stripes;
-	struct btrfs_chunk_map_item item;
+	struct btrfs_chunk_map_item *item = malloc(sizeof(struct btrfs_chunk_map_item));
 
-	item.logical = key->offset;
-	item.length = chunk->length;
+	item->logical = key->offset;
+	item->length = chunk->length;
 	for ( ; stripe < stripe_end; stripe++) {
-		item.devid = stripe->devid;
-		item.physical = stripe->offset;
-		insert_chunk_item(&item);
+		item->devid = stripe->devid;
+		item->physical = stripe->offset;
+		insert_chunk_item(item);
 	}
 }
 
@@ -587,6 +587,7 @@ static struct inode *btrfs_iget_by_inr(struct btrfs_info *fs, u64 inr)
 		debug("%s alloc_inode failed\n", __func__);
 		return NULL;
 	}
+
 	inode->ino = inr;
 	inode->size = inode_item->size;
 	inode->mode = BTRFS_IFTODT(inode_item->mode);
@@ -754,8 +755,12 @@ static uint32_t btrfs_getfssec(struct file *file, char *buf, int sectors,
 	char handle_inline = 0;
 
 	if (off && !file->offset) {/* inline file first read patch */
+		debug("%s handle_inline off=%d file->offset=%lld, file->inode->size=%d\n", __func__, off, file->offset, file->inode->size);
 		file->inode->size += off;
 		handle_inline = 1;
+		/* Read one extra sector when the inline file goes past the sector. */
+		if (((file->inode->size % BTRFS_SS)+off) > BTRFS_SS)
+			sectors++;
 	}
 	ret = generic_getfssec(file, buf, sectors, have_more);
 	if (!ret)
@@ -763,6 +768,7 @@ static uint32_t btrfs_getfssec(struct file *file, char *buf, int sectors,
 
 	off = pvt->offset % BTRFS_SS;
 	if (handle_inline) {/* inline file patch */
+		debug("%s handle_inline off=%d\n", __func__, off);
 		ret -= off;
 		memcpy(buf, buf + off, ret);
 	}
@@ -846,6 +852,8 @@ int btrfs_fs_init(struct btrfs_info *fs)
 	fs->root = btrfs_iget_root(fs);
 	parent_inode = *(fs->root);
 
+	printf("BtrFS init: Max node or leaf size %d\n",
+		max(sb.nodesize, sb.leafsize));
 	return 1;
 }
 static inline uint16_t file_to_handle(struct file *file)
@@ -1138,7 +1146,7 @@ int getfssec(struct com32_filedata *filedata, char * buf)
 	char have_more;
 	uint32_t bytes_read;
 	struct file *file;
-	if (filedata->size >= 512) {
+	if (filedata->size >= BTRFS_SS) {
 		sectors = filedata->size/BTRFS_SS;
 		sectors += (filedata->size%BTRFS_SS) ? 1 : 0;
 	} else
@@ -1326,7 +1334,7 @@ int btrfs_read_file(const char *filename, void *buf, loff_t offset, loff_t len,
 	}
 
 	/*file handle is valid get the size of the file*/
-	len = filedata.size;
+	file_len = filedata.size;
 	if (len == 0)
 		len = file_len;
 
@@ -1336,6 +1344,7 @@ int btrfs_read_file(const char *filename, void *buf, loff_t offset, loff_t len,
 		return -1;
 	}
 
+	*actread = len_read;
 	return len_read;
 }
 

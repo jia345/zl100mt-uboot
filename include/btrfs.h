@@ -6,7 +6,7 @@
 
 #define BTRFS_CURRENTDIR_MAX		15
 #define BTRFS_MAX_OPEN			5
-#define BTRFS_FILENAME_MAX		20
+#define BTRFS_FILENAME_MAX		128
 #define BTRFS_MAX_SYMLINK_CNT		20
 #define BTRFS_MAX_SYMLINK_BUF		4096
 #define BTRFS_SECTOR_SHIFT(fs)		((fs)->sector_shift)
@@ -92,7 +92,7 @@ struct btrfs_dirent {
 
 #define BTRFS_SUPER_INFO_OFFSET		(64 * 1024)
 #define BTRFS_SUPER_INFO_SIZE		4096
-#define BTRFS_MAX_LEAF_SIZE		4096
+#define BTRFS_MAX_LEAF_SIZE		16384
 #define BTRFS_BLOCK_SHIFT		12
 
 #define BTRFS_SUPER_MIRROR_MAX		3
