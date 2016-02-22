@@ -37,6 +37,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define DB_GP_88F68XX_GPP_POL_LOW	0x0
 #define DB_GP_88F68XX_GPP_POL_MID	0x0
 
+#define MVTWSI_ARMADA_DEBUG_REG		0x8c
+
 /* IO expander on Marvell GP board includes e.g. fan enabling */
 struct marvell_io_exp {
 	u8 chip;
@@ -86,6 +88,8 @@ struct hws_topology_map *ddr3_get_topology_map(void)
 
 int board_early_init_f(void)
 {
+	u32 i2c_debug_reg;
+
 	/* Configure MPP */
 	writel(0x11111111, MVEBU_MPP_BASE + 0x00);
 	writel(0x11111111, MVEBU_MPP_BASE + 0x04);
@@ -107,6 +111,11 @@ int board_early_init_f(void)
 	/* Set GPP Out Enable */
 	writel(DB_GP_88F68XX_GPP_OUT_ENA_LOW, MVEBU_GPIO0_BASE + 0x04);
 	writel(DB_GP_88F68XX_GPP_OUT_ENA_MID, MVEBU_GPIO1_BASE + 0x04);
+
+	/* Disable I2C debug mode blocking 0x64 I2C address */
+	i2c_debug_reg = readl(CONFIG_I2C_MVTWSI_BASE0+MVTWSI_ARMADA_DEBUG_REG);
+	i2c_debug_reg &= ~(1<<18);
+	writel(i2c_debug_reg, CONFIG_I2C_MVTWSI_BASE0+MVTWSI_ARMADA_DEBUG_REG);
 
 	return 0;
 }
