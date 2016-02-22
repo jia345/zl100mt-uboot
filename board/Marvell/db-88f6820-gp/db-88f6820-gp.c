@@ -136,7 +136,7 @@ int board_init(void)
 
 int checkboard(void)
 {
-	puts("Board: Do NOT call me TurrisLite!!!\n");
+	puts("Board: Turris Omnia\n");
 
 	return 0;
 }
