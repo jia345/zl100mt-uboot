@@ -36,23 +36,18 @@
 /*
  * Commands configuration
  */
-#define CONFIG_CMD_MEMTEST
 #define CONFIG_CMD_BOOTZ
 #define CONFIG_SYS_NO_FLASH		/* Declare no flash (NOR/SPI) */
 #define CONFIG_CMD_CACHE
-#define CONFIG_CMD_DHCP
 #define CONFIG_CMD_ENV
 #define CONFIG_CMD_EXT2
 #define CONFIG_CMD_EXT4
 #define CONFIG_CMD_FAT
 #define CONFIG_CMD_BTR
 #define CONFIG_CMD_FS_GENERIC
-#define CONFIG_CMD_I2C
 #define CONFIG_CMD_MMC
 #define CONFIG_CMD_PCI
-#define CONFIG_CMD_PING
 #define CONFIG_CMD_SCSI
-#define CONFIG_CMD_SF
 #define CONFIG_CMD_SPI
 #define CONFIG_CMD_TFTPPUT
 #define CONFIG_CMD_TIME
@@ -123,10 +118,16 @@
 #define CONFIG_SYS_CONSOLE_INFO_QUIET	/* don't print console @ startup */
 #define CONFIG_SYS_ALT_MEMTEST
 
+/* Default boot environment. */
+#define CONFIG_BOOTCOMMAND "btrload mmc 0 0x01000000 boot/zImage; btrload mmc 0 0x02000000 boot/dtb; bootz 0x01000000 - 0x02000000"
+
 /* Keep device tree and initrd in lower memory so the kernel can access them */
-#define CONFIG_EXTRA_ENV_SETTINGS	\
-	"fdt_high=0x10000000\0"		\
-	"initrd_high=0x10000000\0"
+#define	CONFIG_EXTRA_ENV_SETTINGS \
+	"fdt_high=0x10000000\0" \
+	"initrd_high=0x10000000\0" \
+	"ethact=neta2\0" \
+	"bootargs=earlyprintk console=ttyS0,115200 rootfstype=btrfs rootdelay=2 root=b301 rw\0"
+
 
 /* SPL */
 /*
