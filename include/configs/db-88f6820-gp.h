@@ -119,14 +119,16 @@
 #define CONFIG_SYS_ALT_MEMTEST
 
 /* Default boot environment. */
-#define CONFIG_BOOTCOMMAND "btrload mmc 0 0x01000000 boot/zImage; btrload mmc 0 0x02000000 boot/dtb; bootz 0x01000000 - 0x02000000"
+#define CONFIG_BOOTCOMMAND "i2c read 0x2a 0x9 1 0x00FFFFF0; setexpr.b rescue *0x00FFFFF0; if test $rescue -ge 1; then echo BOOT RESCUE; run rescueboot; else echo BOOT eMMC FS; run mmcboot; fi"
 
 /* Keep device tree and initrd in lower memory so the kernel can access them */
 #define	CONFIG_EXTRA_ENV_SETTINGS \
 	"fdt_high=0x10000000\0" \
 	"initrd_high=0x10000000\0" \
 	"ethact=neta2\0" \
-	"bootargs=earlyprintk console=ttyS0,115200 rootfstype=btrfs rootdelay=2 root=b301 rw\0"
+	"mmcboot=btrload mmc 0 0x01000000 boot/zImage @; btrload mmc 0 0x02000000 boot/dtb @; bootz 0x01000000 - 0x02000000\0" \
+	"rescueboot=sf probe; sf read 0x1000000 0x100000 0x700000; bootz 0x1000000\0" \
+	"bootargs=earlyprintk console=ttyS0,115200 rootfstype=btrfs rootdelay=2 root=b301 rootflags=subvol=@ rw\0"
 
 
 /* SPL */
