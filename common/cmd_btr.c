@@ -31,8 +31,10 @@ char subvolname[BTRFS_MAX_SUBVOL_NAME];
 
 int do_btr_fsload(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	if (argc > 5)
+	if (argc > 5) {
 		strcpy(subvolname, argv[5]);
+		argc--;
+	}
 	else
 		subvolname[0] = '\0';
 
@@ -53,13 +55,21 @@ btrload,        7,      0,      do_btr_fsload,
 
 static int do_btr_ls(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
+	if (argc > 4) {
+                strcpy(subvolname, argv[4]);
+		argc--;
+	}
+        else
+                subvolname[0] = '\0';
+
 	return do_ls(cmdtp, flag, argc, argv, FS_TYPE_BTR);
 }
 
 U_BOOT_CMD(
-	btrls,  4,      1,      do_btr_ls,
+	btrls,  5,      1,      do_btr_ls,
 	"list files in a directory (default /)",
-	"<interface> [<dev[:part]>] [directory]\n"
-	"    - list files from 'dev' on 'interface' in a 'directory'"
+	"<interface> [<dev[:part]>] [directory] [subvol_name]\n"
+	"    - list files from 'dev' on 'interface' in a 'directory'\n"
+	"	subvol_name is used read that file from this subvolume."
 );
 
