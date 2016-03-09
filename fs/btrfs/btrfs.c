@@ -804,8 +804,9 @@ static void btrfs_get_fs_tree(struct btrfs_info *fs)
 				path.item.size - sizeof(struct btrfs_root_ref);
 
 				debug("sub_vol found %s\n", (char *)(ref+1));
-				if (!strncmp((char *)(ref + 1),
-						subvolname, pathlen)) {
+				if ((!strncmp((char *)(ref + 1),
+						subvolname, pathlen)) &&
+						pathlen == strlen(subvolname)) {
 					subvol_ok = 1;
 					break;
 				}
@@ -941,6 +942,9 @@ void btrfs_mangle_name(char *dst, const char *src)
 {
 	char *p = dst, ch, len;
 	int i = BTRFS_FILENAME_MAX-1;
+
+	while ((src[0] == '/')&&(src[1] != '\0'))
+		src++;
 
 	len = strlen(src);
 	ch = *src;
@@ -1359,6 +1363,9 @@ int btrfs_ls(const char *dirn)
 
 	if (*dirname == '/' && *(dirname+1) == 0)
 		*dirname = '.';
+
+	while ((dirname[0] == '/')&&(dirname[1] != '\0'))
+		dirname++;
 
 	dir = opendir(dirname);
 	if (dir == NULL)
