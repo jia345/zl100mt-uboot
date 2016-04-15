@@ -210,12 +210,12 @@ static u64 logical_physical(u64 logical)
 /* static int btrfs_read(struct fs_info *fs, char *buf, u64 offset, u64 count)
 devread(offset/BTRFS_SS, (offset%BTRFS_SS))
 */
-int btrfs_devread(char *buf, int offset, int byte_len)
+int btrfs_devread(char *buf, u64 offset, u64 byte_len)
 {
 	ALLOC_CACHE_ALIGN_BUFFER(char, sec_buf, BTRFS_SS);
 	unsigned block_len;
-	int sector = (offset/BTRFS_SS);
-	int byte_offset = (offset%BTRFS_SS);
+	u64 sector = (offset/BTRFS_SS);
+	u64 byte_offset = (offset%BTRFS_SS);
 
 	/* Get the read to the beginning of a partition */
 	sector += byte_offset >> BTRFS_SECTOR_BITS;
