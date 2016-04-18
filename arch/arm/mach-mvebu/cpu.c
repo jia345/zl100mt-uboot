@@ -18,6 +18,13 @@
 #define DDR_BASE_CS_OFF(n)	(0x0000 + ((n) << 3))
 #define DDR_SIZE_CS_OFF(n)	(0x0004 + ((n) << 3))
 
+#define MVNETA_MAC_E0_LOW	MVEBU_REGISTER(0x00032414)
+#define MVNETA_MAC_E0_HIGH	MVEBU_REGISTER(0x00032418)
+#define MVNETA_MAC_E1_LOW	MVEBU_REGISTER(0x00036414)
+#define MVNETA_MAC_E1_HIGH	MVEBU_REGISTER(0x00036418)
+#define MVNETA_MAC_E2_LOW	MVEBU_REGISTER(0x00072414)
+#define MVNETA_MAC_E2_HIGH	MVEBU_REGISTER(0x00072418)
+
 static struct mbus_win windows[] = {
 	/* SPI */
 	{ MBUS_SPI_BASE, MBUS_SPI_SIZE,
@@ -438,3 +445,21 @@ void enable_caches(void)
 	dcache_enable();
 }
 #endif
+
+#define NETA_MAC_LOW(addr) ((u32)((addr[4] << 8) | (addr[5])))
+#define NETA_MAC_HI(addr) ((u32)((addr[0] << 24) | (addr[1] << 16) | \
+(addr[2] << 8) | (addr[3] << 0)))
+
+void armada385_set_mac(const uchar *eth0, const uchar *eth1, const uchar *eth2) {
+	writel(NETA_MAC_LOW(eth0), MVNETA_MAC_E0_LOW);
+	writel(NETA_MAC_HI(eth0), MVNETA_MAC_E0_HIGH);
+
+	writel(NETA_MAC_LOW(eth1), MVNETA_MAC_E1_LOW);
+	writel(NETA_MAC_HI(eth1), MVNETA_MAC_E1_HIGH);
+
+	writel(NETA_MAC_LOW(eth2), MVNETA_MAC_E2_LOW);
+	writel(NETA_MAC_HI(eth2), MVNETA_MAC_E2_HIGH);
+
+	eth_setenv_enetaddr("ethaddr", eth1);
+}
+

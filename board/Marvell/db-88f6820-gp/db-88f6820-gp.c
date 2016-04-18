@@ -40,22 +40,24 @@ DECLARE_GLOBAL_DATA_PTR;
 #define MVTWSI_ARMADA_DEBUG_REG		0x8c
 
 /* IO expander on Marvell GP board includes e.g. fan enabling */
+/*
 struct marvell_io_exp {
 	u8 chip;
 	u8 addr;
 	u8 val;
 };
+*/
 
-static struct marvell_io_exp io_exp[] = {
-	{ 0x20, 6, 0x20 }, /* Configuration registers: Bit on --> Input bits */
-	{ 0x20, 7, 0xC3 }, /* Configuration registers: Bit on --> Input bits */
-	{ 0x20, 2, 0x1D }, /* Output Data, register#0 */
-	{ 0x20, 3, 0x18 }, /* Output Data, register#1 */
-	{ 0x21, 6, 0xC3 }, /* Configuration registers: Bit on --> Input bits  */
-	{ 0x21, 7, 0x31 }, /* Configuration registers: Bit on --> Input bits  */
-	{ 0x21, 2, 0x08 }, /* Output Data, register#0 */
-	{ 0x21, 3, 0xC0 }  /* Output Data, register#1 */
-};
+//static struct marvell_io_exp io_exp[] = {
+//	{ 0x20, 6, 0x20 }, /* Configuration registers: Bit on --> Input bits */
+//	{ 0x20, 7, 0xC3 }, /* Configuration registers: Bit on --> Input bits */
+//	{ 0x20, 2, 0x1D }, /* Output Data, register#0 */
+//	{ 0x20, 3, 0x18 }, /* Output Data, register#1 */
+//	{ 0x21, 6, 0xC3 }, /* Configuration registers: Bit on --> Input bits  */
+//	{ 0x21, 7, 0x31 }, /* Configuration registers: Bit on --> Input bits  */
+//	{ 0x21, 2, 0x08 }, /* Output Data, register#0 */
+//	{ 0x21, 3, 0xC0 }  /* Output Data, register#1 */
+//};
 
 /*
  * Define the DDR layout / topology here in the board file. This will
@@ -122,14 +124,17 @@ int board_early_init_f(void)
 
 int board_init(void)
 {
-	int i;
+/*	int i; */
 
 	/* adress of boot parameters */
 	gd->bd->bi_boot_params = mvebu_sdram_bar(0) + 0x100;
 
 	/* Init I2C IO expanders */
+/*
 	for (i = 0; i < ARRAY_SIZE(io_exp); i++)
 		i2c_write(io_exp[i].chip, io_exp[i].addr, 1, &io_exp[i].val, 1);
+*/
+
 
 	return 0;
 }
@@ -141,8 +146,12 @@ int checkboard(void)
 	return 0;
 }
 
+
 int board_eth_init(bd_t *bis)
 {
+	uchar addr[3][6] = { {0x52, 0x00, 0x00, 0x00, 0xac, 0xab}, {0x52, 0x00, 0x00, 0x00, 0xac, 0xac}, {0x52, 0x00, 0x00, 0x00, 0xac, 0xad} };
+	armada385_set_mac(addr[0], addr[1], addr[2]);
+
 	cpu_eth_init(bis); /* Built in controller(s) come first */
 	return pci_eth_init(bis);
 }
