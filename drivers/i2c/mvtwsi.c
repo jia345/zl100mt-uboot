@@ -441,6 +441,64 @@ static int twsi_i2c_write(struct i2c_adapter *adap, uchar chip, uint addr,
 	return status;
 }
 
+/* Warning: Preparation for conversion to DM.
+   The function is needed by atsha204-i2c .
+*/
+int twsi_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msg, int nmsgs)
+{
+	int msgi, status, di;
+	u8 *data;
+
+	for (msgi=0; msgi<nmsgs; msgi++) {
+		di = msg[msgi].len;
+		data = msg[msgi].buf;
+
+		if (msg[msgi].flags & I2C_M_RD) {
+			/* start transaction, generate read address */
+			if (!(msg[msgi].flags & I2C_M_NOSTART))
+				status = i2c_begin(adap, MVTWSI_STATUS_START,
+					  (msg[msgi].addr << 1) | 1);
+
+			if (di > 0)
+				twsi_control_flags |= MVTWSI_CONTROL_ACK;
+
+			/* now receive actual bytes */
+			while ((status == 0) && di--) {
+			/* reset NAK if we if no more to read now */
+				if (di == 0)
+					twsi_control_flags &= ~MVTWSI_CONTROL_ACK;
+				/* read current byte */
+				status = twsi_recv(adap, data++);
+			}
+
+		} else {
+			/* start transaction, generate write address */
+			if (!(msg[msgi].flags & I2C_M_NOSTART))
+				status = i2c_begin(adap, MVTWSI_STATUS_START,
+					(msg[msgi].addr << 1));
+
+			while ((status == 0) && di--)
+				/* send current byte */
+				status = twsi_send(adap,
+					*(data++), MVTWSI_STATUS_DATA_W_ACK);
+		}
+
+		/* return status of first failure */
+		if (status)
+                        return status;
+
+		if (msg[msgi].flags & I2C_M_STOP)
+			/* Stop transaction */
+			status = twsi_stop(adap, status);
+
+		/* return status of first failure */
+		if (status)
+			return status;
+	}
+
+	return status;
+}
+
 #ifdef CONFIG_I2C_MVTWSI_BASE0
 U_BOOT_I2C_ADAP_COMPLETE(twsi0, twsi_i2c_init, twsi_i2c_probe,
 			 twsi_i2c_read, twsi_i2c_write,
