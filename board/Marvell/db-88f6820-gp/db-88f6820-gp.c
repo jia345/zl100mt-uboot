@@ -14,7 +14,20 @@
 
 #include "../drivers/ddr/marvell/a38x/ddr3_a38x_topology.h"
 
+#include <atsha204-i2c.h>
+
+
 DECLARE_GLOBAL_DATA_PTR;
+
+
+
+#define OMNIA_ATSHA204_BUS 6
+#define OMNIA_ATSHA204_OTP_MEM_BLOCK 5
+#define OMNIA_ATSHA204_OTP_MAC0_BLOCK 3
+#define OMNIA_ATSHA204_OTP_MAC1_BLOCK 4
+#define OMNIA_ATSHA204_OTP_VER_BLOCK 0
+#define OMNIA_ATSHA204_OTP_SN_BLOCK 1 
+
 
 #define ETH_PHY_CTRL_REG		0
 #define ETH_PHY_CTRL_POWER_DOWN_BIT	11
@@ -39,32 +52,12 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define MVTWSI_ARMADA_DEBUG_REG		0x8c
 
-/* IO expander on Marvell GP board includes e.g. fan enabling */
-/*
-struct marvell_io_exp {
-	u8 chip;
-	u8 addr;
-	u8 val;
-};
-*/
-
-//static struct marvell_io_exp io_exp[] = {
-//	{ 0x20, 6, 0x20 }, /* Configuration registers: Bit on --> Input bits */
-//	{ 0x20, 7, 0xC3 }, /* Configuration registers: Bit on --> Input bits */
-//	{ 0x20, 2, 0x1D }, /* Output Data, register#0 */
-//	{ 0x20, 3, 0x18 }, /* Output Data, register#1 */
-//	{ 0x21, 6, 0xC3 }, /* Configuration registers: Bit on --> Input bits  */
-//	{ 0x21, 7, 0x31 }, /* Configuration registers: Bit on --> Input bits  */
-//	{ 0x21, 2, 0x08 }, /* Output Data, register#0 */
-//	{ 0x21, 3, 0xC0 }  /* Output Data, register#1 */
-//};
-
 /*
  * Define the DDR layout / topology here in the board file. This will
  * be used by the DDR3 init code in the SPL U-Boot version to configure
  * the DDR3 controller.
  */
-static struct hws_topology_map board_topology_map = {
+static struct hws_topology_map board_topology_map_1g = {
 	0x1, /* active interfaces */
 	/* cs_mask, mirror, dqs_swap, ck_swap X PUPs */
 	{ { { {0x1, 0, 0, 0},
@@ -82,10 +75,70 @@ static struct hws_topology_map board_topology_map = {
 	BUS_MASK_32BIT			/* Busses mask */
 };
 
+static struct hws_topology_map board_topology_map_2g = {
+	0x1, /* active interfaces */
+	/* cs_mask, mirror, dqs_swap, ck_swap X PUPs */
+	{ { { {0x1, 0, 0, 0},
+	      {0x1, 0, 0, 0},
+	      {0x1, 0, 0, 0},
+	      {0x1, 0, 0, 0},
+	      {0x1, 0, 0, 0} },
+	    SPEED_BIN_DDR_1600K,	/* speed_bin */
+	    BUS_WIDTH_16,		/* memory_width */
+	    MEM_8G,			/* mem_size */
+	    DDR_FREQ_800,		/* frequency */
+	    0, 0,			/* cas_l cas_wl */
+	    HWS_TEMP_NORMAL} },		/* temperature */
+	5,				/* Num Of Bus Per Interface*/
+	BUS_MASK_32BIT			/* Busses mask */
+};
+
+
 struct hws_topology_map *ddr3_get_topology_map(void)
 {
+	static int mem = 0;
+	u8 otp[4];
+	int retry = 10;
+
+	/* Get the board config from ATSHA204 chip */
+	if (mem == 0) {
+		if (i2c_set_bus_num(OMNIA_ATSHA204_BUS)) {
+			puts("I2C set bus to ATSHA BUS failed\n");
+			goto out;
+		}
+
+		while ((atsha204_wakeup() != 0)&&(retry--));
+		if(!retry)
+			goto out;
+
+		if (atsha204_read4(otp, OMNIA_ATSHA204_OTP_MEM_BLOCK,
+				ATSHA204_OTP_REG_SELECT) != 0)
+			goto out;
+
+		printf("Memory config ATSHA204: 0x%02x\n", otp[3]);
+
+		if (otp[3] == 0x2)
+			mem = 2;
+		else
+			mem = 1;
+out:
+		atsha204_reset();
+	}
+
+	/* Hardcoded fallback */
+	if (mem == 0 ) {
+		puts("WARNING: Memory config from ATSHA204 OTP read failed.\n");
+		puts("Falling back to default 1GiB map.\n");
+		mem = 1;
+	}
+
 	/* Return the board topology as defined in the board code */
-	return &board_topology_map;
+	if (mem == 1)
+		return &board_topology_map_1g;
+	if (mem == 2)
+		return &board_topology_map_2g;
+
+	return &board_topology_map_1g;
 }
 
 int board_early_init_f(void)
@@ -124,34 +177,110 @@ int board_early_init_f(void)
 
 int board_init(void)
 {
-/*	int i; */
-
 	/* adress of boot parameters */
 	gd->bd->bi_boot_params = mvebu_sdram_bar(0) + 0x100;
-
-	/* Init I2C IO expanders */
-/*
-	for (i = 0; i < ARRAY_SIZE(io_exp); i++)
-		i2c_write(io_exp[i].chip, io_exp[i].addr, 1, &io_exp[i].val, 1);
-*/
-
 
 	return 0;
 }
 
 int checkboard(void)
 {
-	puts("Board: Turris Omnia\n");
+	u32 sn, ver;
+	int err=0;
+
+	if (i2c_set_bus_num(OMNIA_ATSHA204_BUS)) {
+		puts("I2C set bus to ATSHA BUS failed\n");
+		err = 1;
+		goto out;
+	}
+
+	if (atsha204_wakeup() != 0) {
+		err = 1;
+		goto out;
+	}
+	if (atsha204_read4((u8 *)&ver, OMNIA_ATSHA204_OTP_VER_BLOCK,
+			ATSHA204_OTP_REG_SELECT) != 0) {
+		err = 1;
+		goto out;
+	}
+	if (atsha204_read4((u8 *)&sn, OMNIA_ATSHA204_OTP_SN_BLOCK,
+                        ATSHA204_OTP_REG_SELECT) != 0)
+                err = 1;
+
+out:
+	atsha204_reset();
+
+	if (!err)
+		printf("Board: Turris Omnia SN: %08X%08X\n",
+			be32_to_cpu(ver), be32_to_cpu(sn));
+	else
+		printf("Board: Turris Omnia (ver N/A). SN: N/A\n");
 
 	return 0;
 }
 
+void turris_increment_mac(u8 *otp0, u8 *otp1, u8 *addr, u8 increment)
+{
+	u32 suffix = 0;
+
+	suffix = otp1[3];
+	suffix |= ((u32)otp1[2]) << 8;
+	suffix |= ((u32)otp1[1]) << 16;
+
+	suffix += increment;
+
+	addr[0] = otp0[1];
+	addr[1] = otp0[2];
+	addr[2] = otp0[3];
+	addr[3] = suffix >> 16;
+	addr[4] = (suffix >> 8) & 0xFF;
+	addr[5] = suffix & 0xFF;
+}
 
 int board_eth_init(bd_t *bis)
 {
-	uchar addr[3][6] = { {0x52, 0x00, 0x00, 0x00, 0xac, 0xab}, {0x52, 0x00, 0x00, 0x00, 0xac, 0xac}, {0x52, 0x00, 0x00, 0x00, 0xac, 0xad} };
-	armada385_set_mac(addr[0], addr[1], addr[2]);
+	u8 otp0[4], otp1[4];
+	uchar addr[3][6];
+	int i, err=0;
+
+	/* Get the board config from ATSHA204 chip. */
+	if (i2c_set_bus_num(6)) {
+		puts("I2C set bus to ATSHA BUS failed\n");
+		err = 1;
+		goto out;
+	}
+
+	if (atsha204_wakeup() != 0) {
+		err = 1;
+		goto out;
+	}
+
+	if (atsha204_read4(otp0, OMNIA_ATSHA204_OTP_MAC0_BLOCK,
+		ATSHA204_OTP_REG_SELECT) != 0) {
+		err = 1;
+		goto out;
+	}
+
+	if (atsha204_read4(otp1, OMNIA_ATSHA204_OTP_MAC1_BLOCK,
+		ATSHA204_OTP_REG_SELECT) != 0)
+		err = 1;
+
+out:
+	atsha204_reset();
+
+	if(err != 0) {
+		puts("WARNING: MAC config from ATSHA204 OTP read failed.\n");
+		/* Do nothing. By default there will be random MAC addrs. */
+	} else {
+
+		for(i=0; i<3; i++)
+			turris_increment_mac(otp0, otp1, addr[i], i);
+
+		/* Set the addresses to the MAC. */
+		armada385_set_mac(addr[0], addr[1], addr[2]);
+	}
 
 	cpu_eth_init(bis); /* Built in controller(s) come first */
 	return pci_eth_init(bis);
 }
+

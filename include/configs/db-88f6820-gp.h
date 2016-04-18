@@ -60,7 +60,7 @@
 #define CONFIG_SYS_I2C_SLAVE		0x0
 #define CONFIG_SYS_I2C_SPEED		100000
 
-#define CONFIG_SYS_NUM_I2C_BUSES	7
+#define CONFIG_SYS_NUM_I2C_BUSES	8
 #define CONFIG_SYS_I2C_MAX_HOPS		1
 #define CONFIG_SYS_I2C_BUSES	{	{0, {I2C_NULL_HOP} }, \
 					{0, {{I2C_MUX_PCA9547, 0x70, 0} } }, \
@@ -71,6 +71,9 @@
 					{0, {{I2C_MUX_PCA9547, 0x70, 5} } }, \
 					{0, {{I2C_MUX_PCA9547, 0x70, 6} } }, \
 				}
+
+#define CONFIG_ATSHA204
+#define CONFIG_ATSHA204_ADDR	0x64
 
 
 /* SPI NOR flash default params, used by sf commands */
@@ -133,7 +136,7 @@
 #define CONFIG_SYS_ALT_MEMTEST
 
 /* Default boot environment. */
-#define CONFIG_BOOTCOMMAND "i2c read 0x2a 0x9 1 0x00FFFFF0; setexpr.b rescue *0x00FFFFF0; if test $rescue -ge 1; then echo BOOT RESCUE; run rescueboot; else echo BOOT eMMC FS; run mmcboot; fi"
+#define CONFIG_BOOTCOMMAND "i2c dev 1; i2c read 0x2a 0x9 1 0x00FFFFF0; setexpr.b rescue *0x00FFFFF0; if test $rescue -ge 1; then echo BOOT RESCUE; run rescueboot; else echo BOOT eMMC FS; run mmcboot; fi"
 
 /* Keep device tree and initrd in lower memory so the kernel can access them */
 #define	CONFIG_EXTRA_ENV_SETTINGS \
@@ -177,6 +180,7 @@
 #define CONFIG_SPL_LIBGENERIC_SUPPORT
 #define CONFIG_SPL_SERIAL_SUPPORT
 #define CONFIG_SPL_I2C_SUPPORT
+#define CONFIG_SPL_MISC_SUPPORT
 
 #if CONFIG_SPL_BOOT_DEVICE == SPL_BOOT_SPI_NOR_FLASH
 /* SPL related SPI defines */

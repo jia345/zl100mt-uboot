@@ -446,7 +446,7 @@ static int twsi_i2c_write(struct i2c_adapter *adap, uchar chip, uint addr,
 */
 int twsi_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msg, int nmsgs)
 {
-	int msgi, status, di;
+	int msgi, di, status = 0;
 	u8 *data;
 
 	for (msgi=0; msgi<nmsgs; msgi++) {
@@ -486,20 +486,18 @@ int twsi_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msg, int nmsgs)
 
 		/* return status of first failure */
 		if (status) {
-			twsi_reset(adap);
+			if (msg[msgi].flags & I2C_M_STOP)
+				twsi_stop(adap, status);
                         goto out;
 		}
 
 		if (msg[msgi].flags & I2C_M_STOP)
 			/* Stop transaction */
 			status = twsi_stop(adap, status);
-
-		/* return status of first failure */
-		if (status)
-			return status;
 	}
 
-out:	return status;
+out:
+	return status;
 }
 
 #ifdef CONFIG_I2C_MVTWSI_BASE0
