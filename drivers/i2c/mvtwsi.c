@@ -477,15 +477,18 @@ int twsi_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msg, int nmsgs)
 				status = i2c_begin(adap, MVTWSI_STATUS_START,
 					(msg[msgi].addr << 1));
 
-			while ((status == 0) && di--)
+			while ((status == 0) && di--) {
 				/* send current byte */
 				status = twsi_send(adap,
 					*(data++), MVTWSI_STATUS_DATA_W_ACK);
+			}
 		}
 
 		/* return status of first failure */
-		if (status)
-                        return status;
+		if (status) {
+			twsi_reset(adap);
+                        goto out;
+		}
 
 		if (msg[msgi].flags & I2C_M_STOP)
 			/* Stop transaction */
@@ -496,7 +499,7 @@ int twsi_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msg, int nmsgs)
 			return status;
 	}
 
-	return status;
+out:	return status;
 }
 
 #ifdef CONFIG_I2C_MVTWSI_BASE0
