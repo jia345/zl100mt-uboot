@@ -22,7 +22,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 
 #define OMNIA_ATSHA204_BUS 6
-#define OMNIA_ATSHA204_OTP_MEM_BLOCK 5
+#define OMNIA_EEPROM_BUS 1
 #define OMNIA_ATSHA204_OTP_MAC0_BLOCK 3
 #define OMNIA_ATSHA204_OTP_MAC1_BLOCK 4
 #define OMNIA_ATSHA204_OTP_VER_BLOCK 0
@@ -94,40 +94,64 @@ static struct hws_topology_map board_topology_map_2g = {
 };
 
 
+struct omnia_eeprom {
+	u32 magic;
+	u32 ramsize;
+	u32 region;
+	u32 crc;
+};
+
+#define OMNIA_I2C_EEPROM 0x54
+#define OMNIA_I2C_EEPROM_CONFIG_ADDR 0x0
+#define OMNIA_I2C_EEPROM_ADDRLEN 2
+#define OMNIA_I2C_EEPROM_MAGIC 0x0341a034
+
 struct hws_topology_map *ddr3_get_topology_map(void)
 {
 	static int mem = 0;
-	u8 otp[4];
-	int retry = 10;
+	struct omnia_eeprom oep;
+	int crc, retry=3;
 
 	/* Get the board config from ATSHA204 chip */
 	if (mem == 0) {
-		if (i2c_set_bus_num(OMNIA_ATSHA204_BUS)) {
+		if (i2c_set_bus_num(OMNIA_EEPROM_BUS)) {
 			puts("I2C set bus to ATSHA BUS failed\n");
 			goto out;
 		}
 
-		while ((atsha204_wakeup() != 0)&&(retry--));
-		if(!retry)
+		while ((i2c_read(OMNIA_I2C_EEPROM, OMNIA_I2C_EEPROM_CONFIG_ADDR,
+				OMNIA_I2C_EEPROM_ADDRLEN, (uchar *)&oep,
+				sizeof(struct omnia_eeprom)))&&(--retry)) {
+
+			if (oep.magic != OMNIA_I2C_EEPROM_MAGIC) {
+				puts("I2C EEPROM missing magic!\n");
+				continue;
+			}
+	
+			crc = crc32(0, (unsigned char *)&oep, (sizeof(struct omnia_eeprom)-4));
+			if (crc != oep.crc) {
+				printf("CRC of EEPROM memory config failed! calc=0x%04x"
+					" saved=0x%04x\n", crc, oep.crc);
+				continue;
+			}
+		}
+
+		if (retry <= 0) {
+			puts("I2C EEPROM read failed!\n");
 			goto out;
+		}
 
-		if (atsha204_read4(otp, OMNIA_ATSHA204_OTP_MEM_BLOCK,
-				ATSHA204_OTP_REG_SELECT) != 0)
-			goto out;
+		printf("Memory config in EEPROM: 0x%02x\n", oep.ramsize);
 
-		printf("Memory config ATSHA204: 0x%02x\n", otp[3]);
-
-		if (otp[3] == 0x2)
+		if (oep.ramsize == 0x2)
 			mem = 2;
 		else
 			mem = 1;
-out:
-		atsha204_reset();
 	}
 
 	/* Hardcoded fallback */
-	if (mem == 0 ) {
-		puts("WARNING: Memory config from ATSHA204 OTP read failed.\n");
+out:	if (mem == 0 ) {
+		puts("WARNING: Memory config from ATSHA204 EEPROM read failed.\n");
 		puts("Falling back to default 1GiB map.\n");
 		mem = 1;
 	}
@@ -186,7 +210,7 @@ int board_init(void)
 int checkboard(void)
 {
 	u32 sn, ver;
-	int err=0;
+	int err=0, retry=10;
 
 	if (i2c_set_bus_num(OMNIA_ATSHA204_BUS)) {
 		puts("I2C set bus to ATSHA BUS failed\n");
@@ -194,10 +218,12 @@ int checkboard(void)
 		goto out;
 	}
 
-	if (atsha204_wakeup() != 0) {
+	while ((atsha204_wakeup() != 0)&&(--retry));
+	if (retry <= 0) {
 		err = 1;
 		goto out;
 	}
+
 	if (atsha204_read4((u8 *)&ver, OMNIA_ATSHA204_OTP_VER_BLOCK,
 			ATSHA204_OTP_REG_SELECT) != 0) {
 		err = 1;
@@ -241,7 +267,7 @@ int board_eth_init(bd_t *bis)
 {
 	u8 otp0[4], otp1[4];
 	uchar addr[3][6];
-	int i, err=0;
+	int i, err=0, retry=10;
 
 	/* Get the board config from ATSHA204 chip. */
 	if (i2c_set_bus_num(6)) {
@@ -250,7 +276,8 @@ int board_eth_init(bd_t *bis)
 		goto out;
 	}
 
-	if (atsha204_wakeup() != 0) {
+	while ((atsha204_wakeup() != 0)&&(--retry));
+	if (retry <= 0) {
 		err = 1;
 		goto out;
 	}
