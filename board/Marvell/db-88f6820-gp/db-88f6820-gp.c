@@ -15,6 +15,7 @@
 #include "../drivers/ddr/marvell/a38x/ddr3_a38x_topology.h"
 
 #include <atsha204-i2c.h>
+#include <watchdog.h>
 
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -203,6 +204,9 @@ int board_init(void)
 {
 	/* adress of boot parameters */
 	gd->bd->bi_boot_params = mvebu_sdram_bar(0) + 0x100;
+
+	puts("Enabling Armada 385 watchdog.\n");
+	hw_watchdog_init();
 
 	return 0;
 }

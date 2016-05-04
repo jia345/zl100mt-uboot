@@ -33,3 +33,7 @@ CONFIG_XILINX_TB_WATCHDOG
 
 CONFIG_BFIN_WATCHDOG
 	Available for bf5xx and bf6xx to service the watchdog.
+
+CONFIG_ORION_WATCHDOG
+	Available for Armada 380/385 SoC with static timeout.
+

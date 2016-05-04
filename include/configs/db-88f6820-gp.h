@@ -75,6 +75,11 @@
 #define CONFIG_ATSHA204
 #define CONFIG_ATSHA204_ADDR	0x64
 
+/* Watchdog */
+#ifndef CONFIG_SPL_BUILD
+#define CONFIG_HW_WATCHDOG
+#define CONFIG_ORION_WATCHDOG
+#endif
 
 /* SPI NOR flash default params, used by sf commands */
 #define CONFIG_SF_DEFAULT_SPEED		40000000
