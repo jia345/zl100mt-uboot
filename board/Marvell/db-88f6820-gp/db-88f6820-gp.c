@@ -23,12 +23,20 @@ DECLARE_GLOBAL_DATA_PTR;
 
 
 #define OMNIA_ATSHA204_BUS 6
-#define OMNIA_EEPROM_BUS 1
 #define OMNIA_ATSHA204_OTP_MAC0_BLOCK 3
 #define OMNIA_ATSHA204_OTP_MAC1_BLOCK 4
 #define OMNIA_ATSHA204_OTP_VER_BLOCK 0
 #define OMNIA_ATSHA204_OTP_SN_BLOCK 1 
 
+#define OMNIA_EEPROM_BUS 1
+#define OMNIA_I2C_EEPROM 0x54
+#define OMNIA_I2C_EEPROM_CONFIG_ADDR 0x0
+#define OMNIA_I2C_EEPROM_ADDRLEN 2
+#define OMNIA_I2C_EEPROM_MAGIC 0x0341a034
+
+#define OMNIA_MCU_BUS 1
+#define OMNIA_I2C_MCU 0x2a
+#define OMNIA_I2C_MCU_WDT_ADDR 0x0b
 
 #define ETH_PHY_CTRL_REG		0
 #define ETH_PHY_CTRL_POWER_DOWN_BIT	11
@@ -102,11 +110,6 @@ struct omnia_eeprom {
 	u32 crc;
 };
 
-#define OMNIA_I2C_EEPROM 0x54
-#define OMNIA_I2C_EEPROM_CONFIG_ADDR 0x0
-#define OMNIA_I2C_EEPROM_ADDRLEN 2
-#define OMNIA_I2C_EEPROM_MAGIC 0x0341a034
-
 struct hws_topology_map *ddr3_get_topology_map(void)
 {
 	static int mem = 0;
@@ -116,7 +119,7 @@ struct hws_topology_map *ddr3_get_topology_map(void)
 	/* Get the board config from ATSHA204 chip */
 	if (mem == 0) {
 		if (i2c_set_bus_num(OMNIA_EEPROM_BUS)) {
-			puts("I2C set bus to ATSHA BUS failed\n");
+			puts("I2C set bus to EEPROM BUS failed\n");
 			goto out;
 		}
 
@@ -200,14 +203,39 @@ int board_early_init_f(void)
 	return 0;
 }
 
+int disable_mcu_watchdog(void)
+{
+	uchar buf[1] = {0x0};
+	int retry = 3;
+
+	if (i2c_set_bus_num(OMNIA_MCU_BUS)) {
+		puts("I2C set MCU bus failed! Can not disable MCU WDT.\n");
+		return -1;
+	}
+
+	while ((i2c_write(OMNIA_I2C_MCU, OMNIA_I2C_MCU_WDT_ADDR, 1,
+		(uchar *)&buf, 1))&&(--retry));
+
+	if (retry <= 0) {
+		puts("I2C MCU watchdog failed to disable!\n");
+		return -2;
+	}
+
+	return 0;
+}
+
 int board_init(void)
 {
 	/* adress of boot parameters */
 	gd->bd->bi_boot_params = mvebu_sdram_bar(0) + 0x100;
 
+#ifndef CONFIG_SPL_BUILD
 	puts("Enabling Armada 385 watchdog.\n");
 	hw_watchdog_init();
 
+	puts("Disabling MCU startup watchdog.\n");
+	disable_mcu_watchdog();
+#endif
 	return 0;
 }
 
@@ -274,7 +302,7 @@ int board_eth_init(bd_t *bis)
 	int i, err=0, retry=10;
 
 	/* Get the board config from ATSHA204 chip. */
-	if (i2c_set_bus_num(6)) {
+	if (i2c_set_bus_num(OMNIA_ATSHA204_BUS)) {
 		puts("I2C set bus to ATSHA BUS failed\n");
 		err = 1;
 		goto out;
