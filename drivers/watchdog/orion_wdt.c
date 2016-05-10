@@ -50,7 +50,7 @@
 static int orion_wdt_ping(void)
 {
 	/* Reload watchdog duration */
-	writel(FIXED_CLKRATE * ORION_WDT_TIMEOUT,
+	writel((u32)FIXED_CLKRATE * ORION_WDT_TIMEOUT,
 	       ORION_WDT_REG + ORION_WDT_COUNTER_OFFSET);
 	return 0;
 }
@@ -65,7 +65,7 @@ static int armada375_wdt_start(void)
         writel(reg, ORION_WDT_REG + TIMER_CTRL);
 
 	/* Set watchdog duration */
-	writel(FIXED_CLKRATE * ORION_WDT_TIMEOUT,
+	writel((u32)FIXED_CLKRATE * ORION_WDT_TIMEOUT,
 		ORION_WDT_REG + ORION_WDT_COUNTER_OFFSET);
 
 	/* Clear the watchdog expiration bit */
@@ -111,6 +111,7 @@ static int armada375_wdt_stop(void)
 	return 0;
 }
 
+/*
 static int armada375_enabled(void)
 {
 	bool masked, enabled, running;
@@ -121,12 +122,12 @@ static int armada375_enabled(void)
 
 	return !masked && enabled && running;
 }
+*/
 
 void hw_watchdog_disable(void)
 {
 	armada375_wdt_stop();
 }
-
 
 void hw_watchdog_reset(void)
 {
