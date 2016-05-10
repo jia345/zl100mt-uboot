@@ -186,16 +186,16 @@ int atsha204_wakeup(void)
 				debug("%s: Wakeup CRC OK\n", __func__);
 				return 0;
 			} else {
-				printf("%s: Wakeup CRC failure\n", __func__);
+				debug("%s: Wakeup CRC failure\n", __func__);
 				return -EBADMSG;
 			}
 		} else {
-			printf("%s: Wakeup receive failure.\n", __func__);
+			debug("%s: Wakeup receive failure.\n", __func__);
 			return -EBADMSG;
 		}
 	}
 
-	printf("%s: Wakeup Failed. No Device\n", __func__);
+	debug("%s: Wakeup Failed. No Device\n", __func__);
 	return -ENODEV;
 }
 
@@ -348,11 +348,11 @@ int atsha204_read4(u8 *read_buf, const u16 addr, const u8 param1)
 				debug("%s: valid message len=%d\n", __func__, msg.len);
 			}
 		} else {
-			printf("%s: validation failed status=%d\n", __func__, validate_status);
+			debug("%s: validation failed status=%d\n", __func__, validate_status);
 			rc = validate_status;
 		}
 	} else {
-		printf("%s: transaction failed rc=%d\n", __func__, rc);
+		debug("%s: transaction failed rc=%d\n", __func__, rc);
 		rc = -EBADMSG;
 	}
 
@@ -375,7 +375,7 @@ int atsha204_get_random(u8 *to_fill, const size_t max)
 
 		if (!atsha204_check_rsp_crc16(recv.ptr, recv.len)){
 			rc = -EBADMSG;
-			printf("%s: Bad CRC on Random\n", __func__);
+			debug("%s: Bad CRC on Random\n", __func__);
 		} else{
 			debug("%s: CRC on Random OK\n", __func__);
 			rnd_len = (max > recv.len - 3) ? recv.len - 3 : max;
