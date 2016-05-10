@@ -62,6 +62,7 @@ void board_init_f(ulong dummy)
 	ddr3_init();
 
 #ifdef CONFIG_MVEBU_BOOTROM_UARTBOOT
+	puts("Returning to bootrom...\n");
 	/*
 	 * Return to the BootROM to continue the Marvell xmodem
 	 * UART boot protocol. As initiated by the kwboot tool.
