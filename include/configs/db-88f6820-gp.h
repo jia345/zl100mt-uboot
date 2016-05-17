@@ -150,7 +150,7 @@
 	"ethact=neta2\0" \
 	"mmcboot=btrload mmc 0 0x01000000 boot/zImage @; btrload mmc 0 0x02000000 boot/dtb @; bootz 0x01000000 - 0x02000000\0" \
 	"rescueboot=sf probe; sf read 0x1000000 0x100000 0x700000; bootz 0x1000000\0" \
-	"bootargs=earlyprintk console=ttyS0,115200 rootfstype=btrfs rootdelay=2 root=b301 rootflags=subvol=@ rw\0"
+	"bootargs=earlyprintk console=ttyS0,115200 rootfstype=btrfs rootdelay=2 root=b301 rootflags=subvol=@,commit=5 rw\0"
 
 
 /* SPL */
