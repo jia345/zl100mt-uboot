@@ -25,6 +25,8 @@
 #define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO_LATE
 
+#define CONFIG_BOARD_LATE_INIT
+
 /*
  * TEXT_BASE needs to be below 16MiB, since this area is scrubbed
  * for DDR ECC byte filling in the SPL before loading the main
@@ -148,7 +150,7 @@
 	"fdt_high=0x10000000\0" \
 	"initrd_high=0x10000000\0" \
 	"ethact=neta2\0" \
-	"mmcboot=btrload mmc 0 0x01000000 boot/zImage @; btrload mmc 0 0x02000000 boot/dtb @; bootz 0x01000000 - 0x02000000\0" \
+	"mmcboot=setenv bootargs \"$bootargs cfg80211.freg=$regdomain\"; btrload mmc 0 0x01000000 boot/zImage @; btrload mmc 0 0x02000000 boot/dtb @; bootz 0x01000000 - 0x02000000\0" \
 	"rescueboot=setenv bootargs \"$bootargs omniarescue=$rescue\"; sf probe; sf read 0x1000000 0x100000 0x700000; bootz 0x1000000\0" \
 	"bootargs=earlyprintk console=ttyS0,115200 rootfstype=btrfs rootdelay=2 root=b301 rootflags=subvol=@,commit=5 rw\0"
 

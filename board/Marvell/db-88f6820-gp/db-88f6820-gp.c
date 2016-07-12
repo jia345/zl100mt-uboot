@@ -42,6 +42,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define ETH_PHY_CTRL_POWER_DOWN_BIT	11
 #define ETH_PHY_CTRL_POWER_DOWN_MASK	(1 << ETH_PHY_CTRL_POWER_DOWN_BIT)
 
+#define ENV_REGDOMAIN "regdomain"
+
 /*
  * Those values and defines are taken from the Marvell U-Boot version
  * "u-boot-2013.01-2014_T3.0"
@@ -106,44 +108,69 @@ static struct hws_topology_map board_topology_map_2g = {
 struct omnia_eeprom {
 	u32 magic;
 	u32 ramsize;
-	u32 region;
+	char region[4];
 	u32 crc;
 };
+
+static int read_omnia_eeprom(struct omnia_eeprom *oep)
+{
+	int crc, retry=3;
+
+	if (i2c_set_bus_num(OMNIA_EEPROM_BUS)) {
+		puts("I2C set bus to EEPROM BUS failed\n");
+		return -1;
+	}
+
+	while ((i2c_read(OMNIA_I2C_EEPROM, OMNIA_I2C_EEPROM_CONFIG_ADDR,
+			OMNIA_I2C_EEPROM_ADDRLEN, (uchar *)oep,
+			sizeof(struct omnia_eeprom)))&&(--retry)) {
+
+		if (oep->magic != OMNIA_I2C_EEPROM_MAGIC) {
+			puts("I2C EEPROM missing magic!\n");
+			continue;
+		}
+
+		crc = crc32(0, (unsigned char *)oep, (sizeof(struct omnia_eeprom)-4));
+		if (crc != oep->crc) {
+			printf("CRC of EEPROM memory config failed! calc=0x%04x"
+				" saved=0x%04x\n", crc, oep->crc);
+			continue;
+		}
+	}
+
+	if (retry <= 0) {
+		puts("I2C EEPROM read failed!\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+#ifndef CONFIG_SPL_BUILD
+static int set_regdomain(void)
+{
+	struct omnia_eeprom oep;
+	char rd[3] = {' ', ' ', 0};
+
+	if(!(read_omnia_eeprom(&oep)))
+		memcpy(rd, &oep.region, 2);
+	else
+		printf("EEPROM regdomain read failed.\n");
+
+	printf("Regdomain set to %s\n", rd);
+	return setenv(ENV_REGDOMAIN, rd);
+}
+#endif
 
 struct hws_topology_map *ddr3_get_topology_map(void)
 {
 	static int mem = 0;
 	struct omnia_eeprom oep;
-	int crc, retry=3;
 
-	/* Get the board config from ATSHA204 chip */
+	/* Get the board config from EEPROM */
 	if (mem == 0) {
-		if (i2c_set_bus_num(OMNIA_EEPROM_BUS)) {
-			puts("I2C set bus to EEPROM BUS failed\n");
+		if(read_omnia_eeprom(&oep))
 			goto out;
-		}
-
-		while ((i2c_read(OMNIA_I2C_EEPROM, OMNIA_I2C_EEPROM_CONFIG_ADDR,
-				OMNIA_I2C_EEPROM_ADDRLEN, (uchar *)&oep,
-				sizeof(struct omnia_eeprom)))&&(--retry)) {
-
-			if (oep.magic != OMNIA_I2C_EEPROM_MAGIC) {
-				puts("I2C EEPROM missing magic!\n");
-				continue;
-			}
-	
-			crc = crc32(0, (unsigned char *)&oep, (sizeof(struct omnia_eeprom)-4));
-			if (crc != oep.crc) {
-				printf("CRC of EEPROM memory config failed! calc=0x%04x"
-					" saved=0x%04x\n", crc, oep.crc);
-				continue;
-			}
-		}
-
-		if (retry <= 0) {
-			puts("I2C EEPROM read failed!\n");
-			goto out;
-		}
 
 		printf("Memory config in EEPROM: 0x%02x\n", oep.ramsize);
 
@@ -203,7 +230,8 @@ int board_early_init_f(void)
 	return 0;
 }
 
-int disable_mcu_watchdog(void)
+#ifndef CONFIG_SPL_BUILD
+static int disable_mcu_watchdog(void)
 {
 	uchar buf[1] = {0x0};
 	int retry = 3;
@@ -223,6 +251,7 @@ int disable_mcu_watchdog(void)
 
 	return 0;
 }
+#endif
 
 int board_init(void)
 {
@@ -235,7 +264,19 @@ int board_init(void)
 
 	puts("Disabling MCU startup watchdog.\n");
 	disable_mcu_watchdog();
+
+	set_regdomain();
 #endif
+	return 0;
+}
+
+int board_late_init(void)
+{
+
+#ifndef CONFIG_SPL_BUILD
+	set_regdomain();
+#endif
+
 	return 0;
 }
 
