@@ -151,7 +151,7 @@
 	"initrd_high=0x10000000\0" \
 	"ethact=neta2\0" \
 	"mmcboot=setenv bootargs \"$bootargs cfg80211.freg=$regdomain\"; btrload mmc 0 0x01000000 boot/zImage @; btrload mmc 0 0x02000000 boot/dtb @; bootz 0x01000000 - 0x02000000\0" \
-	"rescueboot=setenv bootargs \"$bootargs omniarescue=$rescue\"; sf probe; sf read 0x1000000 0x100000 0x700000; bootz 0x1000000\0" \
+	"rescueboot=i2c mw 0x2a.1 0x3 0x1c 1; i2c mw 0x2a.1 0x4 0x1c 1; mw.l 0x01000000 0x00ff000c; i2c write 0x01000000 0x2a.1 0x5 4 -s; setenv bootargs \"$bootargs omniarescue=$rescue\"; sf probe; sf read 0x1000000 0x100000 0x700000; bootz 0x1000000\0" \
 	"bootargs=earlyprintk console=ttyS0,115200 rootfstype=btrfs rootdelay=2 root=b301 rootflags=subvol=@,commit=5 rw\0"
 
 
