@@ -55,6 +55,9 @@
 #define CONFIG_CMD_TFTPPUT
 #define CONFIG_CMD_TIME
 
+/* RAW initrd support */
+#define CONFIG_SUPPORT_RAW_INITRD
+
 /* I2C */
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MVTWSI
