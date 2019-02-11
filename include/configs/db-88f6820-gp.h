@@ -65,6 +65,8 @@
 #define CONFIG_SYS_I2C_SLAVE		0x0
 #define CONFIG_SYS_I2C_SPEED		100000
 
+#define CONFIG_SYS_I2C_DIRECT_BUS
+/*
 #define CONFIG_SYS_NUM_I2C_BUSES	8
 #define CONFIG_SYS_I2C_MAX_HOPS		1
 #define CONFIG_SYS_I2C_BUSES	{	{0, {I2C_NULL_HOP} }, \
@@ -76,6 +78,7 @@
 					{0, {{I2C_MUX_PCA9547, 0x70, 5} } }, \
 					{0, {{I2C_MUX_PCA9547, 0x70, 6} } }, \
 				}
+*/
 
 #define CONFIG_ATSHA204
 #define CONFIG_ATSHA204_ADDR	0x64

@@ -28,7 +28,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define OMNIA_ATSHA204_OTP_VER_BLOCK 0
 #define OMNIA_ATSHA204_OTP_SN_BLOCK 1 
 
-#define OMNIA_EEPROM_BUS 1
+#define OMNIA_EEPROM_BUS 0
 #define OMNIA_I2C_EEPROM 0x54
 #define OMNIA_I2C_EEPROM_CONFIG_ADDR 0x0
 #define OMNIA_I2C_EEPROM_ADDRLEN 2
@@ -206,7 +206,7 @@ int board_early_init_f(void)
 	writel(0x11244011, MVEBU_MPP_BASE + 0x08);
 	writel(0x22222111, MVEBU_MPP_BASE + 0x0c);
 	writel(0x22200002, MVEBU_MPP_BASE + 0x10);
-	writel(0x30042022, MVEBU_MPP_BASE + 0x14);
+	writel(0x31142022, MVEBU_MPP_BASE + 0x14);
 	writel(0x55550555, MVEBU_MPP_BASE + 0x18);
 	writel(0x00005550, MVEBU_MPP_BASE + 0x1c);
 
@@ -282,6 +282,9 @@ int board_late_init(void)
 
 int checkboard(void)
 {
+#if 1
+	printf("Board: ZL100MT (ver N/A). SN: N/A\n -- TODO");
+#else
 	u32 sn, ver;
 	int err=0, retry=10;
 
@@ -314,6 +317,7 @@ out:
 			be32_to_cpu(ver), be32_to_cpu(sn));
 	else
 		printf("Board: Turris Omnia (ver N/A). SN: N/A\n");
+#endif
 
 	return 0;
 }
