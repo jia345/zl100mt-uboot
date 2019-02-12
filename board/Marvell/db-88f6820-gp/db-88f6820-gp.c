@@ -35,9 +35,11 @@ DECLARE_GLOBAL_DATA_PTR;
 #define OMNIA_I2C_EEPROM_ADDRLEN 2
 #define OMNIA_I2C_EEPROM_MAGIC 0x0341a034
 
+#if 0
 #define OMNIA_MCU_BUS 1
 #define OMNIA_I2C_MCU 0x2a
 #define OMNIA_I2C_MCU_WDT_ADDR 0x0b
+#endif
 
 #define ETH_PHY_CTRL_REG		0
 #define ETH_PHY_CTRL_POWER_DOWN_BIT	11
@@ -231,6 +233,7 @@ int board_early_init_f(void)
 	return 0;
 }
 
+#if 0
 #ifndef CONFIG_SPL_BUILD
 static int disable_mcu_watchdog(void)
 {
@@ -253,6 +256,7 @@ static int disable_mcu_watchdog(void)
 	return 0;
 }
 #endif
+#endif
 
 int board_init(void)
 {
@@ -263,8 +267,10 @@ int board_init(void)
 	puts("Enabling Armada 385 watchdog.\n");
 	hw_watchdog_init();
 
+#if 0
 	puts("Disabling MCU startup watchdog.\n");
 	disable_mcu_watchdog();
+#endif
 
 	set_regdomain();
 #endif
@@ -388,13 +394,13 @@ out:
 
 #else
 	otp0[0] = 0;
-	otp0[1] = 0x02;
-	otp0[2] = 0x19;
-	otp0[3] = 0x20;
+	otp0[1] = 0xAA;
+	otp0[2] = 0xBB;
+	otp0[3] = 0xCC;
 	otp1[0] = 0;
-	otp1[1] = 0xCC;
-	otp1[2] = 0xBB;
-	otp1[3] = 0xAA;
+	otp1[1] = 0x20;
+	otp1[2] = 0x19;
+	otp1[3] = 0x02;
 
 	for(i=0; i<3; i++)
 		turris_increment_mac(otp0, otp1, addr[i], i);
