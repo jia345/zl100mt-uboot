@@ -297,13 +297,16 @@ static void boot_jump_linux(bootm_headers_t *images, int flag)
 	debug("## Transferring control to Linux (at address %08lx)" \
 		"...\n", (ulong) kernel_entry);
 	bootstage_mark(BOOTSTAGE_ID_RUN_OS);
+	printf("--xijia before announce_and_cleanup...\n");
 	announce_and_cleanup(fake);
 
+	printf("--xijia after announce_and_cleanup...\n");
 	if (IMAGE_ENABLE_OF_LIBFDT && images->ft_len)
 		r2 = (unsigned long)images->ft_addr;
 	else
 		r2 = gd->bd->bi_boot_params;
 
+	printf("--xijia before fake...\n");
 	if (!fake) {
 #ifdef CONFIG_ARMV7_NONSEC
 		if (armv7_boot_nonsec()) {
@@ -312,9 +315,11 @@ static void boot_jump_linux(bootm_headers_t *images, int flag)
 							  0, machid, r2);
 		} else
 #endif
+		printf("--xijia before kernel_entry...\n");
 			kernel_entry(0, machid, r2);
 	}
 #endif
+	printf("--xijia after kernel_entry...\n");
 }
 
 /* Main Entry point for arm bootm implementation
