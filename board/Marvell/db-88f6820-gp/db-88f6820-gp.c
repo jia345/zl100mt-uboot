@@ -21,12 +21,13 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 
-
+#if 0
 #define OMNIA_ATSHA204_BUS 6
 #define OMNIA_ATSHA204_OTP_MAC0_BLOCK 3
 #define OMNIA_ATSHA204_OTP_MAC1_BLOCK 4
 #define OMNIA_ATSHA204_OTP_VER_BLOCK 0
 #define OMNIA_ATSHA204_OTP_SN_BLOCK 1 
+#endif
 
 #define OMNIA_EEPROM_BUS 0
 #define OMNIA_I2C_EEPROM 0x54
@@ -283,7 +284,7 @@ int board_late_init(void)
 int checkboard(void)
 {
 #if 1
-	printf("Board: ZL100MT (ver N/A). SN: N/A\n -- TODO");
+	printf("Board: ZL100MT (ver N/A). SN: N/A -- TODO\n");
 #else
 	u32 sn, ver;
 	int err=0, retry=10;
@@ -346,6 +347,7 @@ int board_eth_init(bd_t *bis)
 	uchar addr[3][6];
 	int i, err=0, retry=10;
 
+#if 0
 	/* Get the board config from ATSHA204 chip. */
 	if (i2c_set_bus_num(OMNIA_ATSHA204_BUS)) {
 		puts("I2C set bus to ATSHA BUS failed\n");
@@ -384,6 +386,20 @@ out:
 		armada385_set_mac(addr[0], addr[1], addr[2]);
 	}
 
+#else
+	otp0[0] = 0;
+	otp0[1] = 0x02;
+	otp0[2] = 0x19;
+	otp0[3] = 0x20;
+	otp1[0] = 0;
+	otp1[1] = 0xCC;
+	otp1[2] = 0xBB;
+	otp1[3] = 0xAA;
+
+	for(i=0; i<3; i++)
+		turris_increment_mac(otp0, otp1, addr[i], i);
+	armada385_set_mac(addr[0], addr[1], addr[2]);
+#endif
 	cpu_eth_init(bis); /* Built in controller(s) come first */
 	return pci_eth_init(bis);
 }

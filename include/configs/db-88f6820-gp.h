@@ -66,6 +66,7 @@
 #define CONFIG_SYS_I2C_SPEED		100000
 
 #define CONFIG_SYS_I2C_DIRECT_BUS
+#define CONFIG_SYS_NUM_I2C_BUSES	1
 /*
 #define CONFIG_SYS_NUM_I2C_BUSES	8
 #define CONFIG_SYS_I2C_MAX_HOPS		1
@@ -150,13 +151,14 @@
 #define CONFIG_SYS_ALT_MEMTEST
 
 /* Default boot environment. */
-#define CONFIG_BOOTCOMMAND "i2c dev 1; i2c read 0x2a 0x9 1 0x00FFFFF0; setexpr.b rescue *0x00FFFFF0; if test $rescue -ge 1; then echo BOOT RESCUE; run rescueboot; else echo BOOT eMMC FS; run mmcboot; fi"
+// #define CONFIG_BOOTCOMMAND "i2c dev 1; i2c read 0x2a 0x9 1 0x00FFFFF0; setexpr.b rescue *0x00FFFFF0; if test $rescue -ge 1; then echo BOOT RESCUE; run rescueboot; else echo BOOT eMMC FS; run mmcboot; fi"
+#define CONFIG_BOOTCOMMAND "echo BOOT eMMC FS; run mmcboot"
 
 /* Keep device tree and initrd in lower memory so the kernel can access them */
 #define	CONFIG_EXTRA_ENV_SETTINGS \
 	"fdt_high=0x10000000\0" \
 	"initrd_high=0x10000000\0" \
-	"ethact=neta2\0" \
+	"ethact=eth0\0" \
 	"mmcboot=setenv bootargs \"$bootargs cfg80211.freg=$regdomain\"; btrload mmc 0 0x01000000 boot/zImage @; btrload mmc 0 0x02000000 boot/dtb @; bootz 0x01000000 - 0x02000000\0" \
 	"rescueboot=i2c mw 0x2a.1 0x3 0x1c 1; i2c mw 0x2a.1 0x4 0x1c 1; mw.l 0x01000000 0x00ff000c; i2c write 0x01000000 0x2a.1 0x5 4 -s; setenv bootargs \"$bootargs omniarescue=$rescue\"; sf probe; sf read 0x1000000 0x100000 0x700000; bootz 0x1000000\0" \
 	"bootargs=earlyprintk console=ttyS0,115200 rootfstype=btrfs rootdelay=2 root=b301 rootflags=subvol=@,commit=5 rw\0"

@@ -71,6 +71,7 @@ void arch_lmb_reserve(struct lmb *lmb)
  */
 static void announce_and_cleanup(int fake)
 {
+	printf("--xijia before Starting kernel...\n");
 	printf("\nStarting kernel ...%s\n\n", fake ?
 		"(fake run for tracing)" : "");
 	bootstage_mark_name(BOOTSTAGE_ID_BOOTM_HANDOFF, "start_kernel");
@@ -288,6 +289,7 @@ static void boot_jump_linux(bootm_headers_t *images, int flag)
 
 	kernel_entry = (void (*)(int, int, uint))images->ep;
 
+	printf("--xijia before genenv...\n");
 	s = getenv("machid");
 	if (s) {
 		strict_strtoul(s, 16, &machid);
