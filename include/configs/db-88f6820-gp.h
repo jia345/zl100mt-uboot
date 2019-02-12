@@ -66,6 +66,8 @@
 #define CONFIG_SYS_I2C_SPEED		100000
 
 #define CONFIG_SYS_I2C_DIRECT_BUS
+
+#undef CONFIG_SYS_NUM_I2C_BUSES
 #define CONFIG_SYS_NUM_I2C_BUSES	1
 /*
 #define CONFIG_SYS_NUM_I2C_BUSES	8
@@ -151,7 +153,7 @@
 #define CONFIG_SYS_ALT_MEMTEST
 
 /* Default boot environment. */
-// #define CONFIG_BOOTCOMMAND "i2c dev 1; i2c read 0x2a 0x9 1 0x00FFFFF0; setexpr.b rescue *0x00FFFFF0; if test $rescue -ge 1; then echo BOOT RESCUE; run rescueboot; else echo BOOT eMMC FS; run mmcboot; fi"
+/* #define CONFIG_BOOTCOMMAND "i2c dev 1; i2c read 0x2a 0x9 1 0x00FFFFF0; setexpr.b rescue *0x00FFFFF0; if test $rescue -ge 1; then echo BOOT RESCUE; run rescueboot; else echo BOOT eMMC FS; run mmcboot; fi" */
 #define CONFIG_BOOTCOMMAND "echo BOOT eMMC FS; run mmcboot"
 
 /* Keep device tree and initrd in lower memory so the kernel can access them */
