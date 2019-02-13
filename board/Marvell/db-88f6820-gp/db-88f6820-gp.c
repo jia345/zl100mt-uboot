@@ -209,7 +209,7 @@ struct hws_topology_map *ddr3_get_topology_map(void)
 out:	if (mem == 0 ) {
 		puts("WARNING: Memory config from EEPROM read failed.\n");
 		puts("Falling back to default 512MB map.\n");
-		mem = 1
+		mem = 1;
 	}
 
 	/* Return the board topology as defined in the board code */
