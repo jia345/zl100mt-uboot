@@ -71,6 +71,24 @@ DECLARE_GLOBAL_DATA_PTR;
  * be used by the DDR3 init code in the SPL U-Boot version to configure
  * the DDR3 controller.
  */
+static struct hws_topology_map board_topology_map_512m = {
+	0x1, /* active interfaces */
+	/* cs_mask, mirror, dqs_swap, ck_swap X PUPs */
+	{ { { {0x1, 0, 0, 0},
+	      {0x1, 0, 0, 0},
+	      {0x1, 0, 0, 0},
+	      {0x1, 0, 0, 0},
+	      {0x1, 0, 0, 0} },
+	    SPEED_BIN_DDR_1600K,	/* speed_bin */
+	    BUS_WIDTH_16,		/* memory_width */
+	    MEM_2G,			/* mem_size */
+	    DDR_FREQ_800,		/* frequency */
+	    0, 0,			/* cas_l cas_wl */
+	    HWS_TEMP_NORMAL} },		/* temperature */
+	5,				/* Num Of Bus Per Interface*/
+	BUS_MASK_32BIT			/* Busses mask */
+};
+
 static struct hws_topology_map board_topology_map_1g = {
 	0x1, /* active interfaces */
 	/* cs_mask, mirror, dqs_swap, ck_swap X PUPs */
@@ -177,17 +195,20 @@ struct hws_topology_map *ddr3_get_topology_map(void)
 
 		printf("Memory config in EEPROM: 0x%02x\n", oep.ramsize);
 
+#if 0
 		if (oep.ramsize == 0x2)
 			mem = 2;
 		else
 			mem = 1;
+#else
+		mem = oep.ramsize;
+#endif
 	}
 
 	/* Hardcoded fallback */
 out:	if (mem == 0 ) {
-		puts("WARNING: Memory config from ATSHA204 EEPROM read failed.\n");
-		puts("Falling back to default 1GiB map.\n");
-		mem = 1;
+		puts("WARNING: Memory config from EEPROM read failed.\n");
+		puts("Falling back to default 512MB map.\n");
 	}
 
 	/* Return the board topology as defined in the board code */
@@ -196,7 +217,7 @@ out:	if (mem == 0 ) {
 	if (mem == 2)
 		return &board_topology_map_2g;
 
-	return &board_topology_map_1g;
+	return &board_topology_map_512m;
 }
 
 int board_early_init_f(void)
