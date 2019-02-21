@@ -355,7 +355,9 @@ int cpu_eth_init(bd_t *bis)
 	}
 
 #ifdef CONFIG_TURRISOMNIA_SUPPORT
+/*
 	mvneta_initialize(bis, enet_base[2], 2, 1, PHY_INTERFACE_MODE_SGMII);
+*/
 #else
 	for (i = 0; i < ARRAY_SIZE(phy_addr); i++)
 		mvneta_initialize(bis, enet_base[i], i, phy_addr[i], int_type[i]);
