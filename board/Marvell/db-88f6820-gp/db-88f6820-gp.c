@@ -51,6 +51,7 @@ DECLARE_GLOBAL_DATA_PTR;
  * Those values and defines are taken from the Marvell U-Boot version
  * "u-boot-2013.01-2014_T3.0"
  */
+#if 0
 #define DB_GP_88F68XX_GPP_OUT_ENA_LOW					\
 	(~(BIT(1)  | BIT(4)  | BIT(6)  | BIT(7)  | BIT(8)  | BIT(9)  |	\
 	   BIT(10) | BIT(11) | BIT(19) | BIT(22) | BIT(23) | BIT(25) |	\
@@ -58,6 +59,14 @@ DECLARE_GLOBAL_DATA_PTR;
 #define DB_GP_88F68XX_GPP_OUT_ENA_MID					\
 	(~(BIT(0) | BIT(1) | BIT(2) | BIT(3) | BIT(4) | BIT(15) |	\
 	   BIT(16) | BIT(17) | BIT(18)))
+#else
+#define DB_GP_88F68XX_GPP_OUT_ENA_LOW					\
+	(~(BIT(1)  | BIT(4)  | BIT(6)  | BIT(7)  | BIT(8)  | BIT(9)  |	\
+	   BIT(10) | BIT(11) | BIT(19) | BIT(22) | BIT(23) | BIT(25) |	\
+	   BIT(26) | BIT(27) | BIT(29) | BIT(30) | BIT(31)))
+#define DB_GP_88F68XX_GPP_OUT_ENA_MID					\
+	(~(BIT(1) | BIT(2) | BIT(3) | BIT(13) | BIT(24)))
+#endif
 
 #define DB_GP_88F68XX_GPP_OUT_VAL_LOW	0x0
 #define DB_GP_88F68XX_GPP_OUT_VAL_MID	0x0
@@ -248,6 +257,11 @@ int board_early_init_f(void)
 	/* Set GPP Out Enable */
 	writel(DB_GP_88F68XX_GPP_OUT_ENA_LOW, MVEBU_GPIO0_BASE + 0x04);
 	writel(DB_GP_88F68XX_GPP_OUT_ENA_MID, MVEBU_GPIO1_BASE + 0x04);
+
+	/* out of reset */
+	mdelay(5);
+	writel(0xe, MVEBU_GPIO1_BASE + 0x00); /* GPIO_4G_RSTN(GPIO_35), GPIO_ZW_RSTN(GPIO_34), GPIO_ETH_RSTN(GPIO_33) */
+	mdelay(10);
 
 	/* Disable I2C debug mode blocking 0x64 I2C address */
 	i2c_debug_reg = readl(CONFIG_I2C_MVTWSI_BASE0+MVTWSI_ARMADA_DEBUG_REG);
