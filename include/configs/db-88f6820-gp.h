@@ -54,6 +54,7 @@
 #define CONFIG_CMD_SF
 #define CONFIG_CMD_TFTPPUT
 #define CONFIG_CMD_TIME
+#define CONFIG_CMD_NAND
 
 /* RAW initrd support */
 #define CONFIG_SUPPORT_RAW_INITRD
