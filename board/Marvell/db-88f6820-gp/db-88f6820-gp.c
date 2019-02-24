@@ -51,7 +51,7 @@ DECLARE_GLOBAL_DATA_PTR;
  * Those values and defines are taken from the Marvell U-Boot version
  * "u-boot-2013.01-2014_T3.0"
  */
-#if 0
+#if 1
 #define DB_GP_88F68XX_GPP_OUT_ENA_LOW					\
 	(~(BIT(1)  | BIT(4)  | BIT(6)  | BIT(7)  | BIT(8)  | BIT(9)  |	\
 	   BIT(10) | BIT(11) | BIT(19) | BIT(22) | BIT(23) | BIT(25) |	\
@@ -259,9 +259,11 @@ int board_early_init_f(void)
 	writel(DB_GP_88F68XX_GPP_OUT_ENA_MID, MVEBU_GPIO1_BASE + 0x04);
 
 	/* out of reset */
+#if 0
 	mdelay(5);
 	writel(0xe, MVEBU_GPIO1_BASE + 0x00); /* GPIO_4G_RSTN(GPIO_35), GPIO_ZW_RSTN(GPIO_34), GPIO_ETH_RSTN(GPIO_33) */
 	mdelay(10);
+#endif
 
 	/* Disable I2C debug mode blocking 0x64 I2C address */
 	i2c_debug_reg = readl(CONFIG_I2C_MVTWSI_BASE0+MVTWSI_ARMADA_DEBUG_REG);
